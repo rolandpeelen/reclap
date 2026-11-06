@@ -14,15 +14,15 @@ mechanical: see [Rust to ReScript](#rust-to-rescript).
 ## Setup
 
 ```sh
-npm install reclap
+npm install @rolandpeelen/reclap
 ```
 
 `rescript.json`:
 
 ```json
 {
-  "dependencies": ["reclap"],
-  "ppx-flags": ["reclap/bin/ppx"]
+  "dependencies": ["@rolandpeelen/reclap"],
+  "ppx-flags": ["@rolandpeelen/reclap/bin/ppx"]
 }
 ```
 

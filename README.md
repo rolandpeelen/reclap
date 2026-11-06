@@ -47,15 +47,15 @@ For more information, try '--help'.
 ## Setup
 
 ```sh
-npm install reclap
+npm install @rolandpeelen/reclap
 ```
 
 Add the runtime and the PPX to `rescript.json`:
 
 ```json
 {
-  "dependencies": ["reclap"],
-  "ppx-flags": ["reclap/bin/ppx"]
+  "dependencies": ["@rolandpeelen/reclap"],
+  "ppx-flags": ["@rolandpeelen/reclap/bin/ppx"]
 }
 ```
 
@@ -64,7 +64,7 @@ prebuilt PPX for Linux (x64 and arm64), macOS (x64 and arm64) and Windows
 (x64). Its install script puts the one for your platform at `bin/ppx`; on Linux
 and macOS, `bin/ppx` is also a launcher that finds the binary when the package
 manager skips install scripts. On another platform, build the PPX from source
-with OCaml ≥ 5.1 and dune: `cd node_modules/reclap && dune build`.
+with OCaml ≥ 5.1 and dune: `cd node_modules/@rolandpeelen/reclap && dune build`.
 
 ## Agent skill
 
@@ -75,7 +75,7 @@ agents the attributes, field types and error messages:
 npx skills add rolandpeelen/reclap
 ```
 
-The npm package contains it too, as `node_modules/reclap/skills/reclap`, so
+The npm package contains it too, as `node_modules/@rolandpeelen/reclap/skills/reclap`, so
 `npx skills experimental_sync` picks it up from the dependency.
 
 ## How it works

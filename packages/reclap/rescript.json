@@ -1,5 +1,5 @@
 {
-  "name": "reclap",
+  "name": "@rolandpeelen/reclap",
   "sources": [
     {"dir": "src", "subdirs": true},
     {"dir": "test", "subdirs": true, "type": "dev"},

@@ -1,5 +1,5 @@
 {
-  "name": "reclap",
+  "name": "@rolandpeelen/reclap",
   "version": "0.1.0",
   "description": "Derive command line parsers from ReScript types, in the style of Rust's clap.",
   "type": "module",

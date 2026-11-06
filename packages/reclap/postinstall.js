@@ -36,7 +36,7 @@ if (binary === undefined || !prebuilt.includes(binary)) {
     [
       `reclap: no prebuilt PPX for ${platform}.`,
       `Supported platforms: ${Object.keys(binaries).join(", ")}.`,
-      "Build the PPX from source with OCaml >= 5.1 and dune: cd node_modules/reclap && dune build",
+      "Build the PPX from source with OCaml >= 5.1 and dune: cd node_modules/@rolandpeelen/reclap && dune build",
     ].join("\n"),
   );
   process.exit(1);

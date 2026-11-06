@@ -2,8 +2,8 @@
 ; ReScript sources.
 (dirs ppx)
 
-; Copy the PPX binary to the package root so consumers can reference it as
-; "reclap/ppx.exe" in their rescript.json "ppx-flags".
+; Copy the PPX binary to the package root for the PPX test scripts. Consumers
+; use bin/ppx, which finds the dev build or the prebuilt binary.
 (rule
  (mode
   (promote (until-clean)))
