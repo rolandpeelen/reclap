@@ -21,11 +21,10 @@ module Remote = {
     | @command({aliases: ["l"], visibleAliases: ["ls"]}) List({@arg({short, long}) verbose: bool})
 }
 
-@clap.parser
-@command({about: "A fictional version control system", author: "reclap"})
+@clap.parser @command({about: "A fictional version control system", author: "reclap"})
 type rec t = {
   @arg({short: "C", long: "directory", valueName: "PATH"}) dir: option<string>,
-  @command({subcommand}) command: command,
+  @command(subcommand) command: command,
 }
 @clap.subcommand
 and command =
@@ -46,9 +45,9 @@ and command =
   /** Adds things */
   | Add(addArgs)
   /** Manages remotes */
-  | @command({subcommand}) Remote(Remote.t)
+  | @command(subcommand) Remote(Remote.t)
   /** Stashes changes */
-  | @command({subcommand}) Stash(option<stash>)
+  | @command(subcommand) Stash(option<stash>)
   | @command({name: "secret", hide}) Hidden
 @clap.args
 and addArgs = {
@@ -57,6 +56,7 @@ and addArgs = {
   @arg({short, long}) force: bool,
 }
 @clap.subcommand
-and stash = Push({@arg({short, long}) message: option<string>}) | Pop | Apply({stash: option<string>})
+and stash =
+  Push({@arg({short, long}) message: option<string>}) | Pop | Apply({stash: option<string>})
 
 let run = argv => Clap.tryParseFrom(parser, argv)

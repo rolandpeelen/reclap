@@ -7,7 +7,7 @@ type options = {@arg(long) dry: bool}
 @clap.parser
 type t = {
   mode: mode,
-  @command({flatten}) options: options,
+  @command(flatten) options: options,
 }
 
 @clap.subcommand

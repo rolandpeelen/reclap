@@ -11,8 +11,8 @@ module Level = {
     | Info
     | @value({name: "warn", alias: "warning"}) Warning
     | @value({aliases: ["err", "e"], help: "Only errors"}) Error
-    | @value({hide}) Trace
-    | @value({skip}) Internal
+    | @value(hide) Trace
+    | @value(skip) Internal
 }
 
 @clap.valueEnum @value({renameAll: "SCREAMING_SNAKE_CASE"})
@@ -33,11 +33,11 @@ let percent: Clap.ValueParser.t<int> = Clap.ValueParser.make(
 @clap.parser
 type options = {
   @arg({long, default: Level.Info}) level: Level.t,
-  @arg({long}) color: option<colorChoice>,
+  @arg(long) color: option<colorChoice>,
   @arg({long, default: [JsonLines]}) formats: array<format>,
   @arg({long, valueParser: percent}) quality: int,
   @arg({long, action: Set}) dryRun: bool,
-  @arg({long}) ratio: option<float>,
+  @arg(long) ratio: option<float>,
 }
 
 let run = argv => Clap.tryParseFrom(optionsParser, argv)

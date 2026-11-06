@@ -7,7 +7,7 @@ type constant = {@arg({skip: "fixed"}) value: string}
 @clap.subcommand
 type command =
   | Run({@arg({skip: 0}) code: int})
-  | @command({hide}) Noop
+  | @command(hide) Noop
 
 module Sub = {
   /** A nested program */
@@ -15,12 +15,12 @@ module Sub = {
   type t = {
     @arg(long) \"dry-run": bool,
     @arg({long, short: "N"}) \"max-count": option<int>,
-    @command({flatten}) constant: constant,
-    @command({subcommand}) command: command,
+    @command(flatten) constant: constant,
+    @command(subcommand) command: command,
   }
 }
 
 @clap.valueEnum
-type internal = | @value({skip}) Hidden
+type internal = | @value(skip) Hidden
 
 let subParser = Sub.parser
