@@ -1,0 +1,354 @@
+name: Release
+
+# Builds the PPX for every supported platform and publishes the npm package.
+#
+# - Pushing a tag `vX.Y.Z` publishes version X.Y.Z under the `latest` dist-tag
+#   and creates a GitHub Release with the binaries.
+# - Running the workflow by hand (Actions > Release > Run workflow) builds the
+#   given ref. With `dry_run` (the default) it packs the package and uploads
+#   the tarball as an artifact instead of publishing.
+#
+# npm authenticates with trusted publishing (OIDC): register this repository
+# and `release.yml` as a trusted publisher of the package on npmjs.com. The
+# `NPM_TOKEN` secret is only a fallback. npm attaches provenance only to
+# packages published from public repositories, so `--provenance` is passed
+# only once this repository is public.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or commit to build (default: the selected branch)"
+        required: false
+        default: ""
+      npm_tag:
+        description: "npm dist-tag to publish under, such as latest or next"
+        required: false
+        default: latest
+      dry_run:
+        description: "Pack the package and upload it as an artifact instead of publishing"
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+env:
+  TARGET_REF: ${{ inputs.ref || github.ref }}
+  NPM_TAG: ${{ inputs.npm_tag || 'latest' }}
+  # `inputs` is empty on a tag push, so a tag push always publishes.
+  DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+  ALPINE_IMAGE: ocaml/opam:alpine-3.23-ocaml-5.4
+  OCAML_COMPILER: "5.4"
+
+jobs:
+  build_linux_x64:
+    name: Linux x64
+    runs-on: ubuntu-latest
+    # A fully static binary needs musl; glibc does not support static linking
+    # well. The image's opam root belongs to the `opam` user, but actions run
+    # as root in the container.
+    container:
+      image: ocaml/opam:alpine-3.23-ocaml-5.4
+      options: --user root
+    env:
+      OPAMROOT: /home/opam/.opam
+      OPAMROOTISOK: "1"
+    defaults:
+      run:
+        working-directory: packages/reclap
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_REF }}
+          persist-credentials: false
+
+      - name: Install dune
+        run: opam install dune --yes
+
+      - name: Build the static PPX
+        run: |
+          opam exec -- dune build --profile static ./ppx/bin/reclap_ppx.exe
+          cp _build/default/ppx/bin/reclap_ppx.exe ppx-linux-x64.exe
+          chmod 755 ppx-linux-x64.exe
+
+      # Without arguments the PPX prints its usage and exits with 2.
+      - name: Run the PPX
+        run: |
+          status=0
+          ./ppx-linux-x64.exe || status=$?
+          test "$status" -eq 2
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ppx-linux-x64
+          path: packages/reclap/ppx-linux-x64.exe
+          if-no-files-found: error
+
+  build_linux_arm64:
+    name: Linux arm64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_REF }}
+          persist-credentials: false
+
+      # JavaScript actions do not run in Alpine containers on Linux arm64, so
+      # the actions run on the host and only the build runs in Alpine.
+      - name: Build the static PPX in Alpine
+        run: |
+          docker run --rm --user root --entrypoint sh \
+            -e OPAMROOT=/home/opam/.opam -e OPAMROOTISOK=1 \
+            -v "$GITHUB_WORKSPACE:/work" -w /work/packages/reclap \
+            "$ALPINE_IMAGE" -ec '
+              opam install dune --yes
+              opam exec -- dune build --profile static ./ppx/bin/reclap_ppx.exe
+              cp _build/default/ppx/bin/reclap_ppx.exe ppx-linux-arm64.exe
+              chmod 755 ppx-linux-arm64.exe
+            '
+
+      - name: Check the binary
+        working-directory: packages/reclap
+        run: |
+          file ppx-linux-arm64.exe
+          file ppx-linux-arm64.exe | grep -q 'ARM aarch64'
+          status=0
+          ./ppx-linux-arm64.exe || status=$?
+          test "$status" -eq 2
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ppx-linux-arm64
+          path: packages/reclap/ppx-linux-arm64.exe
+          if-no-files-found: error
+
+  build_macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x86_64
+            artifact: ppx-osx-x64
+          - runner: macos-15
+            arch: arm64
+            artifact: ppx-osx-arm64
+    env:
+      # Run on older macOS releases than the runner's.
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
+    defaults:
+      run:
+        working-directory: packages/reclap
+    steps:
+      - name: Check the runner architecture
+        run: test "$(uname -m)" = "${{ matrix.arch }}"
+        working-directory: .
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_REF }}
+          persist-credentials: false
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ env.OCAML_COMPILER }}
+
+      - name: Install dune
+        run: opam install dune --yes
+
+      - name: Build the PPX
+        run: |
+          opam exec -- dune build ./ppx/bin/reclap_ppx.exe
+          cp _build/default/ppx/bin/reclap_ppx.exe "${{ matrix.artifact }}.exe"
+          chmod 755 "${{ matrix.artifact }}.exe"
+
+      # The binary must be for the right architecture and link only system
+      # libraries, not ones from Homebrew or opam.
+      - name: Check the binary
+        run: |
+          binary="${{ matrix.artifact }}.exe"
+          file "$binary"
+          file "$binary" | grep -q "${{ matrix.arch }}"
+          otool -L "$binary"
+          if otool -L "$binary" | tail -n +2 | grep -v '^[[:space:]]*/usr/lib/'; then
+            echo "The PPX links a library outside /usr/lib." >&2
+            exit 1
+          fi
+          status=0
+          "./$binary" || status=$?
+          test "$status" -eq 2
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: packages/reclap/${{ matrix.artifact }}.exe
+          if-no-files-found: error
+
+  build_windows:
+    name: Windows x64
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: packages/reclap
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_REF }}
+          persist-credentials: false
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ env.OCAML_COMPILER }}
+
+      - name: Install dune
+        run: opam install dune --yes
+
+      - name: Build the PPX
+        run: opam exec -- dune build ./ppx/bin/reclap_ppx.exe
+
+      # Run the binary with only the Windows system directories on PATH, so a
+      # missing MinGW runtime DLL fails here rather than on a user's machine.
+      - name: Check the binary
+        shell: bash
+        run: |
+          cp _build/default/ppx/bin/reclap_ppx.exe ppx-windows.exe
+          status=0
+          env PATH=/c/Windows/System32:/c/Windows ./ppx-windows.exe || status=$?
+          test "$status" -eq 2
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ppx-windows
+          path: packages/reclap/ppx-windows.exe
+          if-no-files-found: error
+
+  publish:
+    name: ${{ (inputs.dry_run && 'Pack') || 'Publish' }}
+    needs: [build_linux_x64, build_linux_arm64, build_macos, build_windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the GitHub Release
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET_REF }}
+          persist-credentials: false
+
+      # npm 11.5.1 or later is needed for trusted publishing; Node 24 ships it.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      # Install before the binaries are in bin/: with them, the package's own
+      # postinstall would replace the bin/ppx launcher with this runner's
+      # binary, and that binary would be published as the launcher.
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: ppx-*
+          merge-multiple: true
+          path: packages/reclap/bin
+
+      - name: Check the binaries
+        working-directory: packages/reclap/bin
+        run: |
+          chmod 755 ppx-*.exe
+          ls -l
+          for platform in linux-x64 linux-arm64 osx-x64 osx-arm64 windows; do
+            test -s "ppx-$platform.exe"
+          done
+          for binary in ppx-linux-x64.exe ppx-linux-arm64.exe; do
+            file "$binary"
+            file "$binary" | grep -Eq 'statically linked|static-pie linked'
+            linked=$(ldd "$binary" 2>&1 || true)
+            echo "$linked"
+            echo "$linked" | grep -Eq 'not a dynamic executable|statically linked'
+          done
+          test "$(head -c 2 ppx)" = '#!'
+
+      # The released Linux binary must expand a fixture exactly as the
+      # development build does.
+      - name: Compare the Linux x64 PPX with the snapshots
+        working-directory: packages/reclap/test/ppx
+        run: |
+          bsc=../../../../node_modules/.bin/bsc
+          for source in *.res *.resi; do
+            "$bsc" -only-parse -ppx ../../bin/ppx-linux-x64.exe -dsource "$source" 2>&1 \
+              | diff -u "__snapshots__/$source.txt" -
+          done
+
+      - name: Set the version
+        id: version
+        working-directory: packages/reclap
+        run: |
+          ref="${TARGET_REF#refs/tags/}"
+          case "$ref" in
+            v[0-9]*) version="${ref#v}" ;;
+            *) version="" ;;
+          esac
+          if [ -n "$version" ]; then
+            if ! echo "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+              echo "The tag $ref is not v followed by a semantic version." >&2
+              exit 1
+            fi
+            npm pkg set version="$version"
+            echo "tag=$ref" >> "$GITHUB_OUTPUT"
+          elif [ "$DRY_RUN" != true ]; then
+            echo "Publishing needs a tag vX.Y.Z as the ref; $TARGET_REF is not one." >&2
+            exit 1
+          fi
+          echo "Version: $(npm pkg get version)"
+
+      - name: Add the README
+        run: cp README.md packages/reclap/README.md
+
+      - name: Pack
+        if: env.DRY_RUN == 'true'
+        working-directory: packages/reclap
+        run: |
+          mkdir -p "$RUNNER_TEMP/package"
+          npm pack --pack-destination "$RUNNER_TEMP/package"
+          tar -tzf "$RUNNER_TEMP"/package/*.tgz
+
+      - uses: actions/upload-artifact@v7
+        if: env.DRY_RUN == 'true'
+        with:
+          name: npm-package
+          path: ${{ runner.temp }}/package/*.tgz
+          if-no-files-found: error
+
+      - name: Publish to npm
+        if: env.DRY_RUN != 'true'
+        working-directory: packages/reclap
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
+        run: |
+          if [ "$PRIVATE_REPOSITORY" = true ]; then
+            npm publish --access public --tag "$NPM_TAG"
+          else
+            npm publish --provenance --access public --tag "$NPM_TAG"
+          fi
+
+      - name: Create the GitHub Release
+        if: env.DRY_RUN != 'true' && steps.version.outputs.tag != ''
+        working-directory: packages/reclap/bin
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "$TAG" --generate-notes ppx-*.exe
