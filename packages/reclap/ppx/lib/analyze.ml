@@ -479,9 +479,92 @@ let analyze_field ctx (field : label_declaration) =
 let all_or_none results =
   if List.for_all Option.is_some results then Some (List.filter_map Fun.id results) else None
 
-let analyze_fields ctx fields =
+(* Duplicate names. clap rejects them with debug assertions when it builds a
+   command, so a derived parser with a duplicate would panic in Rust; the PPX
+   reports them at compile time. Flattened types are checked on their own. *)
+
+type namespace = Id_name | Long_name | Short_name | Subcommand_name
+
+let describe_name namespace text =
+  match namespace with
+  | Id_name -> Printf.sprintf "The argument id \"%s\"" text
+  | Long_name -> Printf.sprintf "The long name --%s" text
+  | Short_name -> Printf.sprintf "The short name -%s" text
+  | Subcommand_name -> Printf.sprintf "The subcommand name \"%s\"" text
+
+(* Whether one owner may register a name twice. clap accepts an argument whose
+   alias repeats its own long name, but not a subcommand whose alias repeats
+   its own name. *)
+type repetition = Repetition_allowed | Repetition_rejected
+
+type registered_name = {
+  namespace : namespace;
+  text : string;
+  owner : string;  (** a description such as "field `name`"; also its identity *)
+  name_loc : Location.t;
+}
+
+(* Reports every name that an earlier owner, or one of the names that clap
+   adds on its own ([automatic]), already registered. *)
+let check_unique_names errors ~repetition ~automatic names =
+  let seen = Hashtbl.create 16 in
+  List.iter (fun (namespace, text, owner) -> Hashtbl.replace seen (namespace, text) owner) automatic;
+  List.iter
+    (fun name ->
+      match (Hashtbl.find_opt seen (name.namespace, name.text), repetition) with
+      | None, (Repetition_allowed | Repetition_rejected) ->
+          Hashtbl.add seen (name.namespace, name.text) name.owner
+      | Some owner, Repetition_allowed when owner = name.owner -> ()
+      | Some owner, Repetition_rejected when owner = name.owner ->
+          Diagnostic.reportf errors name.name_loc "%s is used twice by %s."
+            (describe_name name.namespace name.text)
+            owner
+      | Some owner, (Repetition_allowed | Repetition_rejected) ->
+          Diagnostic.reportf errors name.name_loc "%s is used by both %s and %s."
+            (describe_name name.namespace name.text)
+            owner name.owner)
+    names
+
+let automatic_help_flag = "the automatic --help flag"
+let automatic_version_flag = "the automatic --version flag"
+
+(* The arguments that clap adds to every command: [--help], and [--version]
+   when the command has a version. *)
+let automatic_arg_names ~version =
+  let help =
+    [
+      (Id_name, "help", automatic_help_flag);
+      (Short_name, "h", automatic_help_flag);
+      (Long_name, "help", automatic_help_flag);
+    ]
+  in
+  match version with
+  | None -> help
+  | Some _ ->
+      help
+      @ [
+          (Id_name, "version", automatic_version_flag);
+          (Short_name, "V", automatic_version_flag);
+          (Long_name, "version", automatic_version_flag);
+        ]
+
+let field_names field =
+  match field.source with
+  | Arg arg ->
+      let owner = Printf.sprintf "field `%s`" field.field_name in
+      let name namespace text = { namespace; text; owner; name_loc = field.field_loc } in
+      (name Id_name arg.id :: List.map (name Short_name) (Option.to_list arg.short))
+      @ List.map (name Long_name) (Option.to_list arg.long @ arg.visible_aliases @ arg.aliases)
+  | Flatten _ | Subcommand_field _ | Skip _ -> []
+
+(* [version] is the command's version for a @clap.parser record, which gets an
+   automatic --version flag; [None] for every other record. *)
+let analyze_fields ctx ~version fields =
   let fields = List.map (analyze_field ctx) fields in
   Option.bind (all_or_none fields) (fun fields ->
+      check_unique_names ctx.errors ~repetition:Repetition_allowed
+        ~automatic:(automatic_arg_names ~version)
+        (List.concat_map field_names fields);
       match
         List.filter
           (fun field ->
@@ -531,7 +614,7 @@ let constructor_payload ctx (constructor : constructor_declaration) ~nested =
          inline record.";
       None
   | Pcstr_record fields, false ->
-      Option.map (fun fields -> Inline_record fields) (analyze_fields ctx fields)
+      Option.map (fun fields -> Inline_record fields) (analyze_fields ctx ~version:None fields)
   | Pcstr_record _, true ->
       Diagnostic.report errors loc
         "@command({subcommand}) on a constructor needs a payload type, not an \
@@ -571,6 +654,25 @@ let analyze_subcommand_constructor ctx (constructor : constructor_declaration) =
         payload;
       })
     (constructor_payload ctx constructor ~nested)
+
+(* Every subcommand gets a name and aliases that are unique among the
+   subcommands of its command, including the automatic [help] subcommand. *)
+let analyze_subcommand_constructors ctx constructors =
+  Option.map
+    (fun constructors ->
+      let names constructor =
+        let owner = Printf.sprintf "constructor `%s`" constructor.constructor in
+        List.map
+          (fun text ->
+            { namespace = Subcommand_name; text; owner; name_loc = constructor.constructor_loc })
+          ((constructor.command_name :: constructor.command_visible_aliases)
+          @ constructor.command_aliases)
+      in
+      check_unique_names ctx.errors ~repetition:Repetition_rejected
+        ~automatic:[ (Subcommand_name, "help", "the automatic help subcommand") ]
+        (List.concat_map names constructors);
+      constructors)
+    (all_or_none (List.map (analyze_subcommand_constructor ctx) constructors))
 
 (* Value enum constructors *)
 
@@ -677,22 +779,22 @@ let analyze errors ~module_name derive (declaration : type_declaration) =
         let command = analyze_command errors ~module_name declaration entries in
         Option.map
           (fun fields -> Parser_args (command, fields))
-          (analyze_fields (context errors entries) fields)
+          (analyze_fields (context errors entries) ~version:command.version fields)
     | Parser, Ptype_variant constructors ->
         let entries = command_entries parser_keys in
         let command = analyze_command errors ~module_name declaration entries in
         let ctx = context errors entries in
         Option.map
           (fun constructors -> Parser_subcommand (command, constructors))
-          (all_or_none (List.map (analyze_subcommand_constructor ctx) constructors))
+          (analyze_subcommand_constructors ctx constructors)
     | Args_derive, Ptype_record fields ->
         let ctx = context errors (command_entries rename_keys) in
-        Option.map (fun fields -> Args fields) (analyze_fields ctx fields)
+        Option.map (fun fields -> Args fields) (analyze_fields ctx ~version:None fields)
     | Subcommand_derive, Ptype_variant constructors ->
         let ctx = context errors (command_entries rename_keys) in
         Option.map
           (fun constructors -> Subcommand constructors)
-          (all_or_none (List.map (analyze_subcommand_constructor ctx) constructors))
+          (analyze_subcommand_constructors ctx constructors)
     | Value_enum_derive, Ptype_variant constructors ->
         reject_misplaced errors ~position:"@clap.valueEnum types (use @value({renameAll}))"
           ~allowed:[ "value" ]

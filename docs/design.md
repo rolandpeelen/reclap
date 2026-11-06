@@ -143,6 +143,15 @@ this one).
 A `bool` field must be named (`short` or `long`); a positional flag is a
 compile error, as it is a debug assertion in clap.
 
+Names must be unique, as clap's debug assertions require. Within one record,
+two arguments cannot share an id, a long name (aliases included) or a short
+name, and the automatic `-h`/`--help` (and `-V`/`--version` on a
+`@clap.parser` record with a `version`) count as arguments. Within one variant,
+two subcommands cannot share a name or alias, and the automatic `help`
+subcommand counts. The PPX reports each repetition as a compile error. A
+flattened type is checked on its own, not against the record it is flattened
+into.
+
 ### Value parsers and naming
 
 The value parser for an element type `T` is:

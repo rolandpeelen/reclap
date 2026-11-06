@@ -1,0 +1,33 @@
+type nonrec t = {
+  verbose: bool ;
+  colour: string option }
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.short
+                 (Clap.Arg.action (Clap.Arg.make {*j|verbose|*j})
+                    Clap.Arg.SetTrue) {*j|V|*j}) {*j|verbose|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.alias
+            (Clap.Arg.long
+               (Clap.Arg.valueParser
+                  (Clap.Arg.action
+                     (Clap.Arg.valueName (Clap.Arg.make {*j|colour|*j})
+                        {*j|COLOUR|*j}) Clap.Arg.Set) Clap.ValueParser.string)
+               {*j|colour|*j}) {*j|colour|*j}))
+    (fun [arity:1]__clap_matches ->
+       let __clap_field_verbose =
+         Clap.Matches.getFlag __clap_matches {*j|verbose|*j} in
+       match Clap.Matches.getOne __clap_matches {*j|colour|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_colour ->
+           Ok
+             ({ verbose = __clap_field_verbose; colour = __clap_field_colour
+              } : t))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs (Clap.Command.make {*j|names|*j}) args
