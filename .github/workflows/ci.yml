@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/reclap
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Use OCaml 5.3
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.3"
+
+      - name: Install dune
+        run: opam install dune --yes
+
+      # The workspace's postinstall finds no prebuilt PPX in a checkout and does
+      # nothing; bin/ppx then runs the dune build below.
+      - name: Install JavaScript dependencies
+        run: npm ci
+        working-directory: .
+
+      - name: Build the PPX
+        run: opam exec -- dune build
+
+      - name: Build the ReScript sources
+        run: npx rescript build
+
+      - name: Run the Vitest suites
+        run: npx vitest run
+
+      - name: Run the PPX tests
+        run: opam exec -- npm run test:ppx
+
+      - name: Check formatting
+        run: npx rescript format --check
