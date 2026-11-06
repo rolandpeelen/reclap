@@ -89,7 +89,8 @@ let isPositional: t => bool
 /** Returns whether the action consumes values, which holds for `Set` and `Append`. */
 let takesValue: t => bool
 
-/** Renders the argument as clap does in errors: `--name <NAME>`, `-n <NAME>`, `<NAME>` or `--verbose`. */
+/** Renders the argument as clap does in errors: `--name <NAME>`, `-n <NAME>`, `<NAME>`,
+`--verbose` or `-v...` for a counter. */
 let display: t => string
 
 /** Returns the value placeholder without brackets: the value name, or the id as clap does. */

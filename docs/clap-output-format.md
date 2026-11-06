@@ -88,8 +88,10 @@ Usage:␠{usage}\n
   `Print this message or the help of the given subcommand(s)`. Its own help is
   in `git:help-help` (usage `git help [COMMAND]...`, positional
   `[COMMAND]...  Print help for the subcommand(s)`).
-- Hidden args (`hide`) and hidden values are omitted from help and usage.
-  Hidden aliases are never shown.
+- Hidden args (`hide`) and hidden values are omitted from help. Usage still
+  lists hidden args that are **required** (`edge:hid-help`:
+  `edge hid [OPTIONS] --secret <secret> --out <out> <token>`, where `--secret`
+  and `<token>` are hidden). Hidden aliases are never shown.
 
 ### 3.4 Item spec strings
 
@@ -110,7 +112,9 @@ The **spec** of an item is the text in its left column:
 
 The value placeholder is `value_name` (derive default: SCREAMING_SNAKE_CASE of
 the field). The **width** of a spec is its display width including the 4
-leading spaces of a long-only option.
+leading spaces of a long-only option. reclap counts code points, so `-🚀`
+is two wide (`edge:emoji-help`); clap uses Unicode display width, which
+differs for wide characters such as CJK.
 
 ### 3.5 Short-help layout (one line per item)
 
@@ -200,10 +204,11 @@ spaces; there is no trailing space.
 - `[OPTIONS]`: present if there is at least one non-positional arg that is
   not `--help`/`--version`, not hidden and not required. `git status` has
   none; `git commit` has `-a` so `git commit [OPTIONS] --message <MESSAGE>`.
-- Required options, in declaration order, as `--long <VALUE>` (or
-  `-s <VALUE>` without a long; flags without a value).
-- All visible positionals in index order: `<X>` if required, `[X]` if not;
-  `...` appended for multi-value positionals: `git add [OPTIONS] [PATHS]...`.
+- Required options, hidden ones included, in declaration order, as
+  `--long <VALUE>` (or `-s <VALUE>` without a long; flags without a value).
+- Positionals in index order: required ones as `<X>` (hidden ones too), the
+  other visible ones as `[X]`; `...` appended for multi-value positionals:
+  `git add [OPTIONS] [PATHS]...`.
 - Subcommand placeholder, if there are visible subcommands: `<COMMAND>` when
   required, `[COMMAND]` when optional (`git remote [OPTIONS] [COMMAND]`).
 
@@ -216,13 +221,16 @@ Built from the args the user actually gave ("used") plus the required ones:
 ```
 
 - No `[OPTIONS]`.
-- Options: required ones first (declaration order), then used ones in the
-  order they were seen, without duplicates. Each is rendered as in 3.4
-  without the short: `--name <NAME>`, `--shout`, `-v...`.
-- Positionals: all visible ones; a used or required one is `<X>`, the rest
-  `[X]` (`greet:missing-required-with-other-args`:
+- Options: required ones first (declaration order, hidden ones included), then
+  used ones in the order they were seen, without duplicates. Each is rendered
+  as in 3.4 without the short: `--name <NAME>`, `--shout`, `-v...`.
+- Positionals: a used or required one is `<X>`, the other visible ones `[X]`
+  (`greet:missing-required-with-other-args`:
   `greet --name <NAME> -v... <GREETING>`).
 - `<COMMAND>` only if a subcommand is required; never `[COMMAND]`.
+- Which args count as used depends on the error (table in 6). Hidden args are
+  left out of the used list except where noted. When the list ends up empty,
+  the help usage (4.1) is shown instead (`edge:hid-unknown-after-hidden`).
 
 ## 5. Error format
 
@@ -245,21 +253,21 @@ For more information, try '--help'.\n
 
 | Situation (kind) | Message and context | Tips | Usage | Fixture |
 | --- | --- | --- | --- | --- |
-| Unknown `--long`, similar long exists (`UnknownArgument`) | `unexpected argument '--cout' found` | `a similar argument exists: '--count'` | smart, with the suggested arg counted as used | `greet:unknown-long-with-suggestion` |
+| Unknown `--long`, similar long exists (`UnknownArgument`) | `unexpected argument '--cout' found` | `a similar argument exists: '--count'` | smart: used args, then the suggested one, hidden ones left out | `greet:unknown-long-with-suggestion`, `edge:hid-unknown-suggests-hidden` |
 | Unknown `--long`, no similar long, command has positionals | same | `to pass '--zzz' as a value, use '-- --zzz'` | smart | `greet:unknown-long-without-suggestion` |
 | Unknown `--long` without positionals | same | none | smart | `git:unknown-long-for-other-subcommand` |
 | Unknown `--long` that a later subcommand has | same | `'clone --depth' exists` | smart | `git:unknown-long-suggested-from-subcommand` |
 | Unknown short (first unknown char of a cluster: `-vx` → `-x`) | `unexpected argument '-x' found` | `to pass '-x' as a value, use '-- -x'` if the command has positionals | help | `greet:unknown-short-in-cluster` |
-| Extra positional | `unexpected argument 'extra' found` | none | help | `greet:unexpected-extra-positional` |
-| Unknown word where a subcommand is expected, similar names exist (`InvalidSubcommand`) | `unrecognized subcommand 'comit'` | `a similar subcommand exists: 'commit'`; several: `some similar subcommands exist: 'status', 'stash', 'st'` | help | `git:unknown-subcommand-with-suggestion`, `git:unknown-subcommand-several-suggestions` |
-| Same, no similar name, command has no positionals | `unrecognized subcommand 'frobnicate'` | none | help | `git:unknown-subcommand-without-suggestion` |
+| Extra positional (no free positional slot, no similar subcommand name) | `unexpected argument 'extra' found` | none | help | `greet:unexpected-extra-positional`, `edge:pos-unexpected-after-full` |
+| Word without a free positional slot, similar subcommand names exist (`InvalidSubcommand`) | `unrecognized subcommand 'comit'` | `a similar subcommand exists: 'commit'`; several: `some similar subcommands exist: 'status', 'stash', 'st'` | help | `git:unknown-subcommand-with-suggestion`, `git:unknown-subcommand-several-suggestions`, `edge:pos-similar-subcommand-after-full` |
+| Same, no similar name, command has subcommands and no positionals | `unrecognized subcommand 'frobnicate'` | none | help | `git:unknown-subcommand-without-suggestion` |
 | `help nope` | `unrecognized subcommand 'nope'` | none | help usage of the command where lookup failed | `git:help-unknown` |
 | Subcommand name after `--` | `unexpected argument 'status' found` | `subcommand 'status' exists; to use it, remove the '--' before it` | help | `git:double-dash-before-subcommand` |
 | Value not in possible values (`InvalidValue`) | `invalid value 'alwys' for '--color <COLOR>'` + `\n  [possible values: always, never, auto]` | `a similar value exists: 'always'` | none | `greet:invalid-value-enum-with-suggestion` |
 | Option without a value (at end, or next arg is an option) (`InvalidValue`, empty) | `a value is required for '--name <NAME>' but none was supplied` (+ possible values line for enums) | none | none | `greet:missing-value-long-at-end`, `greet:missing-value-enum` |
 | Value parser fails (`ValueValidation`) | `invalid value 'abc' for '--count <COUNT>': {parser message}` | none | none | `greet:invalid-int` |
-| Required args missing (`MissingRequiredArgument`) | `the following required arguments were not provided:` + `\n  --name <NAME>` per arg (options first in declaration order, then positionals by index) | none | smart (used + missing) | `greet:missing-required`, `git:missing-nested-positionals` |
-| Value given to a flag (`TooManyValues`) | `unexpected value 'x' for '--shout' found; no more were expected` | none | smart (used + this flag) | `greet:flag-with-value` |
+| Required args missing (`MissingRequiredArgument`) | `the following required arguments were not provided:` + `\n  --name <NAME>` per arg (options first in declaration order, then positionals by index) | none | smart: visible args given on the command line, then visible args read from the environment, then the missing ones (hidden too) | `greet:missing-required`, `git:missing-nested-positionals`, `edge:hid-missing-with-env` |
+| Value given to a flag, `--help` or `--version` (`TooManyValues`) | `unexpected value 'x' for '--shout' found; no more were expected` | none | smart: used args that are neither hidden nor required, then this one | `greet:flag-with-value`, `edge:help-with-value` |
 | Non-repeatable arg given twice (`ArgumentConflict`) | `the argument '--name <NAME>' cannot be used multiple times` | none | help | `greet:repeated-single-value-arg`, `greet:repeated-flag` |
 | Subcommand required, some args given (`MissingSubcommand`) | `'git' requires a subcommand but one was not provided` + `\n  [subcommands: clone, add, status, st, commit, ci, remote, stash, gc, rm, help]` (names and **all** aliases, hidden too, in declaration order) | none | help | `git:missing-subcommand-with-args` |
 | Subcommand required, no args at all | short help on stderr (no `error:`, no footer) | | | `git:empty-argv` |
@@ -270,6 +278,17 @@ clap's ranged parser for `u8`:
 - `invalid digit found in string`
 - `cannot parse integer from empty string`
 - `300 is not in 0..=255`, `-1 is not in 0..=255` (`u8`: range `0..=255`)
+
+A `Count` arg reads its environment variable with the `u8` parser, so errors
+name it `-v...` (`edge:count-env-too-large`). `SetTrue`/`SetFalse` flags read
+theirs with the bool parser, which accepts exactly `true` and `false`:
+`invalid value 'yes' for '--flag'` + `\n  [possible values: true, false]`, a
+similar-value tip for near misses (`ture`), and an empty variable is
+`a value is required for '--flag' but none was supplied` with the same list
+(`edge:flag-env-*`).
+
+Floats use Rust's `f64` grammar: `inf`, `infinity` and `nan` in any case and
+with an optional sign; `Display` writes `inf`, `-inf` and `NaN`.
 
 **Suggestions** use Jaro similarity > 0.7 *(source)*. Arguments and values
 get the single best match. Subcommands list every match (names and aliases,
@@ -292,8 +311,23 @@ hidden ones included), ordered from least to most similar.
 - Positionals and options can be mixed in any order.
 - An arg with `Set` given twice is an error; `Append` collects in order
   across `-t a`, `--tag b`, `--tag=c`, `-td`.
-- Precedence: command line, then the env var (an empty env var gives `""`),
-  then the default.
+- Precedence: command line, then the env var (an empty env var gives `""`
+  for options), then the default. A flag's or counter's env var is ignored
+  when the flag is given (`edge:flag-env-ignored-when-given`).
+- Absent flags and counters are present in the matches with a default value:
+  `false` (`true` for `SetFalse`) and `0` (`edge:flags-absent`).
+- Order of checks after parsing a level: env values are validated (an
+  invalid env value wins over a missing subcommand, `edge:strict-invalid-env`),
+  then `arg_required_else_help`, which counts env values as given
+  (`edge:need-env`, `edge:strict-valid-env`), then the missing subcommand,
+  then missing required args.
+- A word that matches a subcommand name starts that subcommand, except right
+  after a value of a multi-value positional, where it is another value:
+  `multi a run` gives `files = [a, run]`, `multi run` runs `run`, and an
+  option in between (`multi a --loud run`, `edge:multi-subcommand-after-flag`)
+  ends the positional's values.
+- Short names are split by code point: `-🚀` and `-x🚀` work
+  (`edge:emoji-*`).
 - `ValueEnum` accepts value aliases (`--color off`); errors and help list only
   the visible names.
 - Parent options are not accepted after the subcommand name

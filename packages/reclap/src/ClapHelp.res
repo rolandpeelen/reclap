@@ -54,16 +54,36 @@ let needsOptionsTag = (command: ClapCommandDefinition.t) =>
 
 let joinWords = words => words->Array.filter(word => word != "")->Array.join(" ")
 
+let addUnique = (items, item) => items->Array.includes(item) ? items : Array.concat(items, [item])
+
+/** Renders the argument part of a usage line as clap's `Usage::write_args` does: the named
+arguments that are required or in `included` (hidden ones too), then every positional in index
+order, `<name>` when required or included and `[name]` otherwise. Hidden positionals that are
+neither required nor included are left out (4.1, 4.2). */
+let renderUsageArgs = (command: ClapCommandDefinition.t, ~included: array<string>) => {
+  let shown =
+    Array.concat(
+      command.args->Array.filter(arg => arg.required)->Array.map(arg => arg.id),
+      included,
+    )->Array.filterMap(id => command.args->Array.find(arg => arg.id == id))
+  let isShown = (arg: ClapArg.t) => shown->Array.some(candidate => candidate.id == arg.id)
+  let named =
+    shown
+    ->Array.filter(arg => !ClapArg.isPositional(arg))
+    ->Array.map(renderUsageSpec)
+    ->Array.reduce([], addUnique)
+  let positionals = ClapCommandDefinition.positionals(command)->Array.filterMap(arg =>
+    switch (isShown(arg), isVisible(arg)) {
+    | (true, _) => Some(ClapArg.displayPositional(arg, ~required=true))
+    | (false, true) => Some(ClapArg.displayPositional(arg, ~required=false))
+    | (false, false) => None
+    }
+  )
+  Array.concat(named, positionals)
+}
+
 /** Renders the usage line that help and most errors show, without `Usage: ` (4.1). */
 let renderUsage = (command: ClapCommandDefinition.t, ~binName) => {
-  let requiredNamed =
-    ClapCommandDefinition.named(command)
-    ->Array.filter(arg => arg.required && isVisible(arg))
-    ->Array.map(renderUsageSpec)
-  let positionals =
-    ClapCommandDefinition.positionals(command)
-    ->Array.filter(isVisible)
-    ->Array.map(arg => ClapArg.displayPositional(arg, ~required=arg.required))
   let subcommandPlaceholder = switch visibleSubcommands(command) {
   | [] => ""
   | _ if command.subcommandRequired => "<COMMAND>"
@@ -72,36 +92,21 @@ let renderUsage = (command: ClapCommandDefinition.t, ~binName) => {
   joinWords(
     Array.concatMany(
       [binName, needsOptionsTag(command) ? "[OPTIONS]" : ""],
-      [requiredNamed, positionals, [subcommandPlaceholder]],
+      [renderUsageArgs(command, ~included=[]), [subcommandPlaceholder]],
     ),
   )
 }
 
 /** Renders the usage line built from the required arguments and the arguments with ids in
-`used`, in that order, as clap does for some errors (4.2). */
-let renderSmartUsage = (command: ClapCommandDefinition.t, ~binName, ~used: array<string>) => {
-  let isUsed = (arg: ClapArg.t) => used->Array.includes(arg.id)
-  let named = ClapCommandDefinition.named(command)
-  let requiredNamed = named->Array.filter(arg => arg.required)
-  let usedNamed =
-    used->Array.filterMap(id =>
-      named->Array.find(arg => arg.id == id && !arg.required && isVisible(arg))
-    )
-  let positionals =
-    ClapCommandDefinition.positionals(command)
-    ->Array.filter(isVisible)
-    ->Array.map(arg => ClapArg.displayPositional(arg, ~required=arg.required || isUsed(arg)))
+`used`, in that order, as clap does for some errors (4.2). Callers decide which used arguments
+count; clap leaves hidden ones out in most places. */
+let renderSmartUsage = (command: ClapCommandDefinition.t, ~binName, ~used: array<string>) =>
   joinWords(
     Array.concatMany(
       [binName],
-      [
-        Array.concat(requiredNamed, usedNamed)->Array.map(renderUsageSpec),
-        positionals,
-        [command.subcommandRequired ? "<COMMAND>" : ""],
-      ],
+      [renderUsageArgs(command, ~included=used), [command.subcommandRequired ? "<COMMAND>" : ""]],
     ),
   )
-}
 
 let renderItemSpec = (arg: ClapArg.t) =>
   switch (ClapArg.isPositional(arg), arg.short, arg.long) {
@@ -165,7 +170,7 @@ let specValues = (arg: ClapArg.t, ~env, ~includePossibleValues) => {
   [envValue, defaultValue, aliases, possibleValues]->Array.keepSome
 }
 
-let width = String.length
+let width = ClapText.width
 
 let renderShortItems = (items: array<(string, string)>) => {
   let longest = items->Array.reduce(2, (longest, (spec, _)) => Math.Int.max(longest, width(spec)))

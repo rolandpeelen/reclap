@@ -35,10 +35,27 @@ let parseFloat = input =>
   switch input {
   | "" => Error("cannot parse float from empty string")
   | input if !RegExp.test(floatPattern, input) => Error("invalid float literal")
-  | input => Ok(Float.parseFloat(input))
+  | input =>
+    let isNegative = input->String.startsWith("-")
+    let unsigned = input->String.replaceRegExp(/^[+-]/, "")->String.toLowerCase
+    switch (unsigned, isNegative) {
+    | ("inf" | "infinity", false) => Ok(Float.Constants.positiveInfinity)
+    | ("inf" | "infinity", true) => Ok(Float.Constants.negativeInfinity)
+    | ("nan", _) => Ok(Float.Constants.nan)
+    | (_, _) => Ok(Float.parseFloat(input))
+    }
   }
 
-let float = make(parseFloat, value => Float.toString(value))
+// Rust's `Display` for `f64` writes `inf`, `-inf` and `NaN`.
+let formatFloat = value =>
+  switch value {
+  | value if value == Float.Constants.positiveInfinity => "inf"
+  | value if value == Float.Constants.negativeInfinity => "-inf"
+  | value if Float.isNaN(value) => "NaN"
+  | value => Float.toString(value)
+  }
+
+let float = make(parseFloat, formatFloat)
 
 let enum = pairs => {
   parse: input =>

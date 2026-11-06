@@ -22,7 +22,9 @@ let string: t<string>
 /** Accepts optionally signed base-10 integers in the 32-bit range, such as `-3` and `42`. Rejects `1.5` and `12abc`. */
 let int: t<int>
 
-/** Accepts decimal and exponent float literals, such as `1`, `-0.5` and `2e3`. Rejects trailing garbage. */
+/** Accepts what Rust's `f64::from_str` accepts: decimal and exponent literals such as `1`,
+`-0.5` and `2e3`, and `inf`, `infinity` and `nan` in any case with an optional sign. Rejects
+trailing garbage. Formats infinities as `inf` and `-inf`, as Rust does. */
 let float: t<float>
 
 /** Accepts exactly `true` and `false`. */

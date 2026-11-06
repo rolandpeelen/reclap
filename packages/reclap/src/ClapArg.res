@@ -116,6 +116,10 @@ let displayName = arg =>
 let display = arg =>
   switch isPositional(arg) {
   | true => displayPositional(arg, ~required=arg.required)
-  | false if takesValue(arg) => `${displayName(arg)} <${placeholder(arg)}>`
-  | false => displayName(arg)
+  | false =>
+    switch arg.action {
+    | Set | Append => `${displayName(arg)} <${placeholder(arg)}>`
+    | Count => displayName(arg) ++ "..."
+    | SetTrue | SetFalse | Help | Version => displayName(arg)
+    }
   }
