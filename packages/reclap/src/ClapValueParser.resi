@@ -31,7 +31,8 @@ let bool: t<bool>
 /** Accepts the name or an alias of each listed possible value and returns the paired value.
 
 The possible values are listed in help and in errors, like clap's `ValueEnum`.
-Values are compared with structural equality when formatted. */
+Values are compared with `===` when formatted, which is exact for the constant
+constructors that `@clap.valueEnum` accepts. A value that is not listed formats as `""`. */
 let enum: array<('value, ClapPossibleValue.t)> => t<'value>
 
 /** Parses one raw string. **Errors**: the reason from the parser. */

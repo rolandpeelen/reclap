@@ -9,7 +9,10 @@ type t<'value> = {
 }
 
 /** Creates the subcommand set from a function that adds the subcommands to a parent command and a decoder. */
-let make: (ClapCommand.t => ClapCommand.t, ClapMatches.t => result<'value, ClapError.t>) => t<'value>
+let make: (
+  ClapCommand.t => ClapCommand.t,
+  ClapMatches.t => result<'value, ClapError.t>,
+) => t<'value>
 
 /** Adds the subcommands to a parent command without requiring one. */
 let augment: (t<'value>, ClapCommand.t) => ClapCommand.t
