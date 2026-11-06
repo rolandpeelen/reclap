@@ -312,8 +312,8 @@ jobs:
           fi
           echo "Version: $(npm pkg get version)"
 
-      - name: Add the README
-        run: cp README.md packages/reclap/README.md
+      - name: Add the README and the licence
+        run: cp README.md LICENSE packages/reclap/
 
       - name: Check the package contents
         working-directory: packages/reclap
