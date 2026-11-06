@@ -554,12 +554,9 @@ let finish = (level, state, subcommand) =>
         }),
       )
     | None | Some(_) =>
-      checkRequired(level, state, entries)->Result.map((): ClapMatches.t => {
-        command: level.command,
-        context: helpContext(level),
-        entries,
-        subcommand,
-      })
+      checkRequired(level, state, entries)->Result.map(() =>
+        ClapMatches.make(~command=level.command, ~context=helpContext(level), ~entries, ~subcommand)
+      )
     }
   }
 

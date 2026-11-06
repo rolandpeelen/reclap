@@ -4,7 +4,7 @@ clap ranks candidates by Jaro similarity and keeps those above 0.7. */
 
 let threshold = 0.7
 
-let characters = text => text->String.split("")
+let characters = ClapText.codePoints
 
 /** Returns the Jaro similarity of two strings, from 0 (nothing in common) to 1 (equal). */
 let jaro = (left, right) => {
