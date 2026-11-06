@@ -1,0 +1,36 @@
+#!/bin/sh
+# The reclap PPX, as referenced from rescript.json: "ppx-flags": ["reclap/bin/ppx"].
+#
+# The npm package ships one prebuilt binary per platform next to this script.
+# postinstall.js replaces this script with the matching binary when npm runs
+# install scripts; when it does not (npm 11 without approval, pnpm, bun), this
+# script picks the binary on every call instead.
+dir=$(dirname "$0")
+
+# A local `dune build` (development, or building from source) wins.
+dev="$dir/../_build/default/ppx/bin/reclap_ppx.exe"
+if [ -x "$dev" ]; then
+  exec "$dev" "$@"
+fi
+
+os=$(uname -s)
+arch=$(uname -m)
+case "$os" in
+  Linux) platform=linux ;;
+  Darwin) platform=osx ;;
+  *) platform=unsupported ;;
+esac
+case "$arch" in
+  x86_64 | amd64) arch=x64 ;;
+  aarch64 | arm64) arch=arm64 ;;
+  *) platform=unsupported ;;
+esac
+
+binary="$dir/ppx-$platform-$arch.exe"
+if [ "$platform" = unsupported ] || [ ! -f "$binary" ]; then
+  echo "reclap: no prebuilt PPX for $os $(uname -m)." >&2
+  echo "Prebuilt: Linux x64/arm64, macOS x64/arm64, Windows x64." >&2
+  echo "Build it from source with OCaml >= 5.1 and dune: cd node_modules/reclap && dune build" >&2
+  exit 1
+fi
+exec "$binary" "$@"

@@ -1,0 +1,3 @@
+# The PPX launchers run as-is on their platforms.
+packages/reclap/bin/ppx text eol=lf
+packages/reclap/bin/ppx.cmd text eol=crlf
