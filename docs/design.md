@@ -162,7 +162,10 @@ into.
 
 The value parser for an element type `T` is:
 
-- `string`, `int`, `float`, `bool`: `Clap.ValueParser.string` and so on.
+- `string`, `int`, `float`, `bool`: `Clap.ValueParser.string` and so on. The
+  standard library spellings `String.t`, `Int.t`, `Float.t` and `Bool.t` (also
+  with a `Stdlib.` prefix) are the same types and get the same parsers; a
+  `Bool.t` field is a flag and an `Int.t` field can count.
 - Any other type: the value that `@clap.valueEnum` generates for it, by the
   naming rule below. Users can write that value by hand for custom types, which
   is how clap's `value_parser = ...` is spelled.

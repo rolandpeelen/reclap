@@ -1,0 +1,139 @@
+type nonrec t =
+  {
+  name: String.t ;
+  count: Int.t ;
+  ratio: Float.t option ;
+  force: Bool.t ;
+  enabled: Stdlib.Bool.t ;
+  verbose: Int.t ;
+  tag: String.t array ;
+  weight: Float.t array option ;
+  files: Stdlib.String.t array }
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.required
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|name|*j})
+                          {*j|NAME|*j}) true) Clap.Arg.Set)
+                 Clap.ValueParser.string) {*j|name|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.defaultValue
+                 (Clap.Arg.valueParser
+                    (Clap.Arg.action
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|count|*j})
+                          {*j|COUNT|*j}) Clap.Arg.Set) Clap.ValueParser.int)
+                 Clap.ValueParser.int 1) {*j|count|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|ratio|*j})
+                       {*j|RATIO|*j}) Clap.Arg.Set) Clap.ValueParser.float)
+              {*j|ratio|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.short
+                 (Clap.Arg.action (Clap.Arg.make {*j|force|*j})
+                    Clap.Arg.SetTrue) {*j|f|*j}) {*j|force|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.required
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|enabled|*j})
+                          {*j|ENABLED|*j}) true) Clap.Arg.Set)
+                 Clap.ValueParser.bool) {*j|enabled|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.short
+              (Clap.Arg.action (Clap.Arg.make {*j|verbose|*j}) Clap.Arg.Count)
+              {*j|v|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|tag|*j})
+                       {*j|TAG|*j}) Clap.Arg.Append) Clap.ValueParser.string)
+              {*j|tag|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|weight|*j})
+                       {*j|WEIGHT|*j}) Clap.Arg.Append)
+                 Clap.ValueParser.float) {*j|weight|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.valueParser
+            (Clap.Arg.action
+               (Clap.Arg.valueName (Clap.Arg.make {*j|files|*j})
+                  {*j|FILES|*j}) Clap.Arg.Append) Clap.ValueParser.string))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getRequired __clap_matches {*j|name|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_name ->
+           (match Clap.Matches.getRequired __clap_matches {*j|count|*j}
+                    Clap.ValueParser.int
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_count ->
+                (match Clap.Matches.getOne __clap_matches {*j|ratio|*j}
+                         Clap.ValueParser.float
+                 with
+                 | Error __clap_error -> Error __clap_error
+                 | Ok __clap_field_ratio ->
+                     let __clap_field_force =
+                       Clap.Matches.getFlag __clap_matches {*j|force|*j} in
+                     (match Clap.Matches.getRequired __clap_matches
+                              {*j|enabled|*j} Clap.ValueParser.bool
+                      with
+                      | Error __clap_error -> Error __clap_error
+                      | Ok __clap_field_enabled ->
+                          let __clap_field_verbose =
+                            Clap.Matches.getCount __clap_matches
+                              {*j|verbose|*j} in
+                          (match Clap.Matches.getMany __clap_matches
+                                   {*j|tag|*j} Clap.ValueParser.string
+                           with
+                           | Error __clap_error -> Error __clap_error
+                           | Ok __clap_field_tag ->
+                               (match Clap.Matches.getManyOptional
+                                        __clap_matches {*j|weight|*j}
+                                        Clap.ValueParser.float
+                                with
+                                | Error __clap_error -> Error __clap_error
+                                | Ok __clap_field_weight ->
+                                    (match Clap.Matches.getMany
+                                             __clap_matches {*j|files|*j}
+                                             Clap.ValueParser.string
+                                     with
+                                     | Error __clap_error ->
+                                         Error __clap_error
+                                     | Ok __clap_field_files ->
+                                         Ok
+                                           ({
+                                              name = __clap_field_name;
+                                              count = __clap_field_count;
+                                              ratio = __clap_field_ratio;
+                                              force = __clap_field_force;
+                                              enabled = __clap_field_enabled;
+                                              verbose = __clap_field_verbose;
+                                              tag = __clap_field_tag;
+                                              weight = __clap_field_weight;
+                                              files = __clap_field_files
+                                            } : t))))))))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs (Clap.Command.make {*j|module-types|*j}) args

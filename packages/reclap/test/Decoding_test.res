@@ -169,3 +169,55 @@ describe("decoding", () => {
     )->toEqual(Error(2))
   })
 })
+
+describe("standard library module types", () => {
+  let parse = argv =>
+    Clap.tryParseFrom(ModuleTypes.parser, Array.concat(["module-types"], argv), ~env=Dict.make())
+
+  test("decode like the builtin types", () => {
+    expect(
+      parse([
+        "--name",
+        "Ann",
+        "--ratio",
+        "0.5",
+        "-f",
+        "--enabled",
+        "false",
+        "-vv",
+        "--tag",
+        "a",
+        "--weight",
+        "1.5",
+        "a.txt",
+      ]),
+    )->toEqual(
+      Ok(
+        (
+          {
+            name: "Ann",
+            count: 1,
+            ratio: Some(0.5),
+            force: true,
+            enabled: false,
+            verbose: 2,
+            tag: ["a"],
+            weight: Some([1.5]),
+            files: ["a.txt"],
+          }: ModuleTypes.t
+        ),
+      ),
+    )
+  })
+  test("reject values the builtin parsers reject", () => {
+    expect(
+      parse(["--name", "Ann", "--enabled", "false", "--count", "many"])->Result.mapError(
+        Clap.Error.render,
+      ),
+    )->toEqual(
+      Error(
+        "error: invalid value 'many' for '--count <COUNT>': invalid digit found in string\n\nFor more information, try '--help'.\n",
+      ),
+    )
+  })
+})

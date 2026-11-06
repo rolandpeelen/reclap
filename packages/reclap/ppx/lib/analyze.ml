@@ -187,6 +187,20 @@ let option_payload (typ : core_type) =
   | Ptyp_constr ({ txt = Lident "option"; _ }, [ inner ]) -> Some inner
   | _ -> None
 
+(* The builtin value types: [string], [int], [float] and [bool], also spelled
+   as their standard library modules' [t], such as [Int.t] or [Stdlib.Int.t]. *)
+let builtin_names = [ ("String", "string"); ("Int", "int"); ("Float", "float"); ("Bool", "bool") ]
+
+let builtin (typ : core_type) =
+  let of_module module_name = List.assoc_opt module_name builtin_names in
+  match typ.ptyp_desc with
+  | Ptyp_constr ({ txt = Lident (("string" | "int" | "float" | "bool") as name); _ }, []) ->
+      Some name
+  | Ptyp_constr ({ txt = Ldot (Lident module_name, "t"); _ }, [])
+  | Ptyp_constr ({ txt = Ldot (Ldot (Lident "Stdlib", module_name), "t"); _ }, []) ->
+      of_module module_name
+  | _ -> None
+
 type shape =
   | Bool_shape
   | Scalar of core_type
@@ -195,32 +209,27 @@ type shape =
   | Many_optional of core_type
 
 let shape (typ : core_type) =
-  match typ.ptyp_desc with
-  | Ptyp_constr ({ txt = Lident "bool"; _ }, []) -> Bool_shape
-  | Ptyp_constr
+  match (builtin typ, typ.ptyp_desc) with
+  | Some "bool", _ -> Bool_shape
+  | _, Ptyp_constr
       ( { txt = Lident "option"; _ },
         [ { ptyp_desc = Ptyp_constr ({ txt = Lident "array"; _ }, [ element ]); _ } ] )
     ->
       Many_optional element
-  | Ptyp_constr ({ txt = Lident "option"; _ }, [ element ]) -> Optional element
-  | Ptyp_constr ({ txt = Lident "array"; _ }, [ element ]) -> Many element
+  | _, Ptyp_constr ({ txt = Lident "option"; _ }, [ element ]) -> Optional element
+  | _, Ptyp_constr ({ txt = Lident "array"; _ }, [ element ]) -> Many element
   | _ -> Scalar typ
 
-let is_int (typ : core_type) =
-  match typ.ptyp_desc with
-  | Ptyp_constr ({ txt = Lident "int"; _ }, []) -> true
-  | _ -> false
+let is_int (typ : core_type) = builtin typ = Some "int"
 
 (* The value parser for the element type of a field. *)
 let element_parser errors ~explicit (element : core_type) =
   match explicit with
   | Some expression -> Some (Custom expression)
   | None -> (
-      match element.ptyp_desc with
-      | Ptyp_constr ({ txt = Lident (("string" | "int" | "float" | "bool") as name); _ }, [])
-        ->
-          Some (Builtin name)
-      | Ptyp_constr ({ txt = Lident ("option" | "array"); _ }, _) ->
+      match (builtin element, element.ptyp_desc) with
+      | Some name, _ -> Some (Builtin name)
+      | None, Ptyp_constr ({ txt = Lident ("option" | "array"); _ }, _) ->
           Diagnostic.reportf errors element.ptyp_loc
             "Unsupported field type: `%s` cannot be nested here. Fields can be \
              `T`, `option<T>`, `array<T>` or `option<array<T>>`."

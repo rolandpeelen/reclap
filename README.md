@@ -102,8 +102,9 @@ Rust: `@arg({short, long})` gives `-n, --name` for a field `name`.
 | `array<T>`          | zero or more occurrences                  |
 | `option<array<T>>`  | like `array<T>`, but `None` when absent   |
 
-`T` is `string`, `int`, `float`, `bool`, a `@clap.valueEnum` type, or anything
-with a `valueParser: Clap.ValueParser.make(parse, format)`. A field without
+`T` is `string`, `int`, `float`, `bool` (or `String.t`, `Int.t`, `Float.t`,
+`Bool.t`), a `@clap.valueEnum` type, or anything with a
+`valueParser: Clap.ValueParser.make(parse, format)`. A field without
 `short` or `long` is positional.
 
 ### `@arg({...})`
