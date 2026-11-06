@@ -3,7 +3,7 @@
 Derive command line parsers from ReScript types, the way Rust's
 [clap](https://docs.rs/clap/latest/clap/_derive/index.html) derives them from
 Rust types. Help text, usage lines and error messages match clap 4 byte for
-byte; the test suite replays 125 recorded clap 4.6.7 runs.
+byte; the test suite replays 178 recorded clap 4.6.7 runs.
 
 ```rescript
 /** Simple program to greet a person */

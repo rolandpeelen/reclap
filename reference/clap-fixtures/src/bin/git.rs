@@ -40,6 +40,9 @@ enum Commands {
         /// Create a shallow clone with this many commits
         #[arg(long)]
         depth: Option<u32>,
+        /// Check out this branch instead of the remote's HEAD
+        #[arg(long, id = "branch_name")]
+        branch: Option<String>,
     },
     /// Add file contents to the index
     Add(AddArgs),

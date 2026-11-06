@@ -112,7 +112,7 @@ this one).
 | `default: expr`        | typed default value (clap's `default_value_t`); arrays for `array<T>`   |
 | `help: "..."`          | overrides the doc comment summary                                       |
 | `longHelp: "..."`      | overrides the long doc comment                                          |
-| `valueName: "FILE"`    | placeholder in usage and help                                           |
+| `valueName: "FILE"`    | placeholder in usage and help; default: `id` if given, else the SCREAMING_SNAKE_CASE field name |
 | `id: "x"`              | argument id; default: the field name                                    |
 | `alias: "x"`, `aliases: [..]` | hidden long aliases                                              |
 | `visibleAlias: "x"`, `visibleAliases: [..]` | long aliases shown in help                                 |
@@ -121,6 +121,12 @@ this one).
 | `valueParser: expr`    | a `Clap.ValueParser.t<T>` for the field's element type                  |
 | `hide`                 | hide from help                                                          |
 | `skip: expr`           | do not register an argument; the field is always `expr`                 |
+
+As in `clap_derive`, an explicit `id` is also the default `valueName`,
+verbatim: `@arg({long, id: "branch_name"}) branch: string` shows
+`--branch <branch_name>`. In `clap_derive` a bare `long`, `short` or `env`
+written after `id` derives from the id too; reclap always derives those from
+the field name.
 
 `@value({...})` on a `@clap.valueEnum` constructor: `name`, `help`, `alias`,
 `aliases`, `hide`, `skip`. On the type: `renameAll`.

@@ -29,6 +29,8 @@ and commands =
       directory: option<string>,
       /** Create a shallow clone with this many commits */
       @arg(long) depth: option<int>,
+      /** Check out this branch instead of the remote's HEAD */
+      @arg({long, id: "branch_name"}) branch: option<string>,
     })
   /** Add file contents to the index */
   | Add(addArgs)

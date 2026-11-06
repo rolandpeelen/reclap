@@ -121,6 +121,7 @@ const GIT: &[Case] = &[
     // Successful parses.
     case("clone", &["clone", "https://example.com/repo"]),
     case("clone-with-dir", &["clone", "--depth", "1", "https://example.com/repo", "out"]),
+    case("clone-branch-with-id", &["clone", "--branch", "main", "https://example.com/repo"]),
     case("global-before-subcommand", &["-C", "/tmp", "-q", "status"]),
     case("global-after-subcommand", &["status", "-q"]),
     case("add-newtype", &["add", "-n", "a.txt", "b.txt"]),

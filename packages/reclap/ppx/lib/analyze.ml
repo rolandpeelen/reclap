@@ -409,7 +409,8 @@ let arg_field ctx (field : label_declaration) entries =
         Option.bind (setting "env") (derive_name ~field_name ~casing:ctx.env_casing)
       in
       let help, long_help = help_texts errors ~help:"help" ~long_help:"longHelp" entries field.pld_attributes in
-      let id = Option.value (string_option errors "id" entries) ~default:field_name in
+      let explicit_id = string_option errors "id" entries in
+      let id = Option.value explicit_id ~default:field_name in
       let hide = flag_option errors "hide" entries in
       let visible_aliases = aliases ~visible:true errors entries in
       let aliases = aliases errors entries in
@@ -444,10 +445,13 @@ let arg_field ctx (field : label_declaration) entries =
                   | Get_required, None -> Inferred_required
                   | (Get_required | Get_one | Get_many | Get_many_optional), _ -> Not_required)
             in
+            (* As in clap_derive, an explicit id is the value name verbatim; only
+               a name derived from the field is converted. *)
             let value_name =
-              match string_option errors "valueName" entries with
-              | Some name -> name
-              | None -> Casing.convert Screaming_snake field_name
+              match (string_option errors "valueName" entries, explicit_id) with
+              | Some name, (Some _ | None) -> name
+              | None, Some id -> id
+              | None, None -> Casing.convert Screaming_snake field_name
             in
             let value_parser = element_parser errors ~explicit:explicit_parser element in
             check_default_values ctx value_parser default;

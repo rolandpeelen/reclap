@@ -65,13 +65,14 @@ module GitJson = {
 
   let commands = (command: DerivedGit.commands) =>
     switch command {
-    | Clone({remote, directory, depth}) =>
+    | Clone({remote, directory, depth, branch}) =>
       variant(
         "Clone",
         object([
           ("remote", string(remote)),
           ("directory", option(directory, string)),
           ("depth", option(depth, int)),
+          ("branch", option(branch, string)),
         ]),
       )
     | Add(add) => variant("Add", addArgs(add))

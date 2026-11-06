@@ -27,6 +27,13 @@ let clone =
     ->Clap.Arg.long("depth")
     ->Clap.Arg.help("Create a shallow clone with this many commits"),
   )
+  ->Clap.Command.arg(
+    Clap.Arg.make("branch_name")
+    ->Clap.Arg.valueName("branch_name")
+    ->Clap.Arg.valueParser(Clap.ValueParser.string)
+    ->Clap.Arg.long("branch")
+    ->Clap.Arg.help("Check out this branch instead of the remote's HEAD"),
+  )
 
 let add =
   Clap.Command.make("add")

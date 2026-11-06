@@ -74,7 +74,7 @@
       ],
       "env": {},
       "exitCode": 0,
-      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
+      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n      --branch <branch_name>\n          Check out this branch instead of the remote's HEAD\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
       "stderr": "",
       "parsed": null
     },
@@ -147,7 +147,7 @@
       ],
       "env": {},
       "exitCode": 0,
-      "stdout": "Clone a repository into a new directory\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>     The repository to clone from\n  [DIRECTORY]  The directory to clone into\n\nOptions:\n      --depth <DEPTH>  Create a shallow clone with this many commits\n  -h, --help           Print help (see more with '--help')\n",
+      "stdout": "Clone a repository into a new directory\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>     The repository to clone from\n  [DIRECTORY]  The directory to clone into\n\nOptions:\n      --depth <DEPTH>         Create a shallow clone with this many commits\n      --branch <branch_name>  Check out this branch instead of the remote's HEAD\n  -h, --help                  Print help (see more with '--help')\n",
       "stderr": "",
       "parsed": null
     },
@@ -159,7 +159,7 @@
       ],
       "env": {},
       "exitCode": 0,
-      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
+      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n      --branch <branch_name>\n          Check out this branch instead of the remote's HEAD\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
       "stderr": "",
       "parsed": null
     },
@@ -291,11 +291,12 @@
             "Clone": {
               "remote": "https://example.com/repo",
               "directory": null,
-              "depth": null
+              "depth": null,
+              "branch": null
             }
           }
         },
-        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: None, depth: None } }"
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: None, depth: None, branch: None } }"
       }
     },
     {
@@ -321,11 +322,42 @@
             "Clone": {
               "remote": "https://example.com/repo",
               "directory": "out",
-              "depth": 1
+              "depth": 1,
+              "branch": null
             }
           }
         },
-        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: Some(\"out\"), depth: Some(1) } }"
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: Some(\"out\"), depth: Some(1), branch: None } }"
+      }
+    },
+    {
+      "name": "clone-branch-with-id",
+      "argv": [
+        "clone",
+        "--branch",
+        "main",
+        "https://example.com/repo"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Clone": {
+              "remote": "https://example.com/repo",
+              "directory": null,
+              "depth": null,
+              "branch": "main"
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: None, depth: None, branch: Some(\"main\") } }"
       }
     },
     {
