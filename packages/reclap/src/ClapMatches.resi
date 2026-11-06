@@ -47,6 +47,15 @@ let getManyOptional: (
   ClapValueParser.t<'value>,
 ) => result<option<array<'value>>, ClapError.t>
 
+/** Returns the unparsed values of the argument as stored, or `None` when it has no entry.
+
+Mirrors `ArgMatches::get_raw`. Flags store `"true"`/`"false"` and counters the count. */
+let getRaw: (t, string) => option<array<string>>
+
+/** Returns the ids of every argument with an entry, defaulted ones included, sorted. Mirrors
+`ArgMatches::ids`, which lists them in insertion order instead. */
+let ids: t => array<string>
+
 /** Returns whether the argument has a value from any source. */
 let contains: (t, string) => bool
 

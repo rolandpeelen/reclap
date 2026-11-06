@@ -8,3 +8,13 @@ let replayCommand = (fileName, command: Clap.Command.t) =>
 
 replayCommand("greet.json", GreetCli.command)
 replayCommand("git.json", GitCli.command)
+
+FixtureReplay.replay("edge.json", ~programName=EdgeCli.command.name, (argv, env) =>
+  Clap.getMatchesFrom(EdgeCli.command, argv, ~env)
+)
+FixtureReplay.replayParsedValues(
+  "edge.json",
+  ~programName=EdgeCli.command.name,
+  (argv, env) => Clap.getMatchesFrom(EdgeCli.command, argv, ~env),
+  EdgeCli.dump,
+)

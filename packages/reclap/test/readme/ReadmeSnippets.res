@@ -26,7 +26,7 @@ module Subcommands = {
   type command =
     | Add(addArgs) // a newtype variant, like `Add(AddArgs)` in Rust
     | @command({visibleAlias: "ci"}) Commit({@arg({short, long}) message: string})
-    | @command({subcommand}) Remote(option<remote>) // nested; optional
+    | @command(subcommand) Remote(option<remote>) // nested; optional
     | Status
 }
 
@@ -41,8 +41,9 @@ module ValueEnums = {
 
 module Builder = {
   let command =
-    Clap.Command.make("prog")
-    ->Clap.Command.arg(Clap.Arg.make("name")->Clap.Arg.short("n")->Clap.Arg.long("name"))
+    Clap.Command.make("prog")->Clap.Command.arg(
+      Clap.Arg.make("name")->Clap.Arg.short("n")->Clap.Arg.long("name"),
+    )
 
   let name = () =>
     switch Clap.getMatchesFrom(command, ["prog", "-n", "Ann"]) {

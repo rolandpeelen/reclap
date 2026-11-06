@@ -153,3 +153,27 @@ let replay = (
       )
     )
   )
+
+/** Registers one test per case of `fileName` in which clap parsed successfully, comparing
+`toJson` of the value that `parse` returns with the `value` that clap recorded. */
+let replayParsedValues = (
+  fileName,
+  ~programName,
+  parse: (array<string>, Dict.t<string>) => result<'value, Clap.Error.t>,
+  toJson: 'value => JSON.t,
+) =>
+  describe(`${fileName} parsed values`, () =>
+    loadCases(fileName)->Array.forEach(fixtureCase =>
+      switch fixtureCase.parsedValue {
+      | None => ()
+      | Some(expected) =>
+        test(
+          fixtureCase.name,
+          () =>
+            expect(
+              parse(argvOf(fixtureCase, ~programName), fixtureCase.env)->Result.map(toJson),
+            )->toEqual(Ok(expected)),
+        )
+      }
+    )
+  )
