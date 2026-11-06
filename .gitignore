@@ -23,3 +23,7 @@ reference/clap-fixtures/target/
 *.cmj
 *.cmt
 *.cmti
+
+# Prebuilt PPX binaries, placed by the release workflow
+packages/reclap/bin/ppx-*.exe
+packages/reclap/bin/ppx.exe

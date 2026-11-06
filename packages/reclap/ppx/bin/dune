@@ -1,3 +1,11 @@
+; `dune build --profile static` links a fully static binary. Only the release
+; workflow uses it, inside an Alpine (musl) container; glibc and macOS do not
+; support fully static executables.
+(env
+ (static
+  (flags
+   (:standard -ccopt -static))))
+
 (executable
  (name reclap_ppx)
  (libraries reclap_ppx))
