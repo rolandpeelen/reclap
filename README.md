@@ -46,18 +46,25 @@ For more information, try '--help'.
 
 ## Setup
 
-reclap is a ReScript 12 runtime library plus a PPX. Add both to
-`rescript.json`:
+```sh
+npm install reclap
+```
+
+Add the runtime and the PPX to `rescript.json`:
 
 ```json
 {
   "dependencies": ["reclap"],
-  "ppx-flags": ["reclap/ppx.exe"]
+  "ppx-flags": ["reclap/bin/ppx"]
 }
 ```
 
-The PPX is a native OCaml executable. Until prebuilt binaries are published,
-build it once with OCaml ≥ 5.1 and dune: `cd node_modules/reclap && dune build`.
+There is no build step: reclap needs ReScript 12, and the package ships a
+prebuilt PPX for Linux (x64 and arm64), macOS (x64 and arm64) and Windows
+(x64). Its install script puts the one for your platform at `bin/ppx`; on Linux
+and macOS, `bin/ppx` is also a launcher that finds the binary when the package
+manager skips install scripts. On another platform, build the PPX from source
+with OCaml ≥ 5.1 and dune: `cd node_modules/reclap && dune build`.
 
 ## How it works
 
@@ -203,3 +210,27 @@ ppxlib no longer reads, so the PPX carries a verbatim copy of that AST
 (`ppx/lib/parsetree0.ml`) and reads and writes the compiler's marshalled files
 directly. After changing the PPX, delete `packages/reclap/lib` before
 rebuilding: `rescript build` does not notice a new `ppx.exe`.
+
+## Releasing
+
+`.github/workflows/release.yml` builds the PPX on every supported platform
+and publishes the npm package.
+
+- **Release:** push a tag `vX.Y.Z`. The workflow publishes version `X.Y.Z`
+  (the tag sets the version; `package.json` does not need a bump) under the
+  `latest` dist-tag and creates a GitHub Release with the binaries.
+- **Dry run:** run the workflow by hand with `dry_run` checked (the default),
+  from the Actions tab or with
+  `gh workflow run release.yml --ref master -f dry_run=true`. It builds and
+  checks every binary, packs the package and uploads the tarball as the
+  `npm-package` artifact, without publishing. `ref` selects another branch,
+  tag or commit, and `npm_tag` another dist-tag for a real run.
+
+npm authenticates the workflow with trusted publishing: on npmjs.com, under the
+package's settings, add a trusted publisher for the GitHub repository
+`rolandpeelen/reclap` and the workflow `release.yml`. A first version has to
+exist before the package has settings, so publish it with the `NPM_TOKEN`
+fallback: a repository secret holding a granular npm access token with
+publish rights. npm only attaches provenance to packages from public
+repositories, so the workflow passes `--provenance` once the repository is
+public.
