@@ -9,15 +9,16 @@ module Doc_comment = Doc_comment
 module Naming = Naming
 open Parsetree0
 
-let rec map_structure ~module_name items =
-  List.concat_map (map_structure_item ~module_name) items
+let rec map_structure ~module_name ~enums items =
+  let enums = Enum_scope.enter enums items in
+  List.concat_map (map_structure_item ~module_name ~enums) items
 
-and map_structure_item ~module_name (item : structure_item) =
+and map_structure_item ~module_name ~enums (item : structure_item) =
   match item.pstr_desc with
-  | Pstr_type (rec_flag, declarations) -> Derive.structure ~module_name item rec_flag declarations
-  | Pstr_module binding -> [ { item with pstr_desc = Pstr_module (map_module_binding binding) } ]
+  | Pstr_type (rec_flag, declarations) -> Derive.structure ~module_name ~enums item rec_flag declarations
+  | Pstr_module binding -> [ { item with pstr_desc = Pstr_module (map_module_binding ~enums binding) } ]
   | Pstr_recmodule bindings ->
-      [ { item with pstr_desc = Pstr_recmodule (List.map map_module_binding bindings) } ]
+      [ { item with pstr_desc = Pstr_recmodule (List.map (map_module_binding ~enums) bindings) } ]
   | Pstr_modtype declaration ->
       [ { item with pstr_desc = Pstr_modtype (map_module_type_declaration declaration) } ]
   | Pstr_include include_ ->
@@ -25,27 +26,27 @@ and map_structure_item ~module_name (item : structure_item) =
         {
           item with
           pstr_desc =
-            Pstr_include { include_ with pincl_mod = map_module_expr ~module_name include_.pincl_mod };
+            Pstr_include { include_ with pincl_mod = map_module_expr ~module_name ~enums include_.pincl_mod };
         };
       ]
   | Pstr_eval _ | Pstr_value _ | Pstr_primitive _ | Pstr_typext _ | Pstr_exception _
   | Pstr_open _ | Pstr_class _ | Pstr_class_type _ | Pstr_attribute _ | Pstr_extension _ ->
       [ item ]
 
-and map_module_binding (binding : module_binding) =
-  { binding with pmb_expr = map_module_expr ~module_name:binding.pmb_name.txt binding.pmb_expr }
+and map_module_binding ~enums (binding : module_binding) =
+  { binding with pmb_expr = map_module_expr ~module_name:binding.pmb_name.txt ~enums binding.pmb_expr }
 
-and map_module_expr ~module_name (expression : module_expr) =
+and map_module_expr ~module_name ~enums (expression : module_expr) =
   let desc =
     match expression.pmod_desc with
-    | Pmod_structure items -> Pmod_structure (map_structure ~module_name items)
+    | Pmod_structure items -> Pmod_structure (map_structure ~module_name ~enums items)
     | Pmod_constraint (inner, typ) ->
-        Pmod_constraint (map_module_expr ~module_name inner, map_module_type ~module_name typ)
+        Pmod_constraint (map_module_expr ~module_name ~enums inner, map_module_type ~module_name typ)
     | Pmod_functor (name, parameter, body) ->
         Pmod_functor
           ( name,
             Option.map (map_module_type ~module_name:name.txt) parameter,
-            map_module_expr ~module_name body )
+            map_module_expr ~module_name ~enums body )
     | (Pmod_ident _ | Pmod_apply _ | Pmod_unpack _ | Pmod_extension _) as desc -> desc
   in
   { expression with pmod_desc = desc }
@@ -99,5 +100,5 @@ and map_module_declaration (declaration : module_declaration) =
 let rewrite ~source_name (ast : Ast_io.ast) : Ast_io.ast =
   let module_name = Naming.module_of_source source_name in
   match ast with
-  | Implementation structure -> Implementation (map_structure ~module_name structure)
+  | Implementation structure -> Implementation (map_structure ~module_name ~enums:Enum_scope.empty structure)
   | Interface signature -> Interface (map_signature ~module_name signature)

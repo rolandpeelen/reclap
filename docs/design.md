@@ -125,6 +125,12 @@ this one).
 `@value({...})` on a `@clap.valueEnum` constructor: `name`, `help`, `alias`,
 `aliases`, `hide`, `skip`. On the type: `renameAll`.
 
+A skipped value has no name, so it cannot be a `default`: help could not show
+it and the parser could not read it back. A `default` that names a skipped
+constructor is a compile error when the value enum is declared in the same
+file. The PPX sees one file at a time and no types, so it cannot check a value
+enum from another file.
+
 `renameAll` accepts clap's values: `"kebab-case"` (default), `"snake_case"`,
 `"camelCase"`, `"PascalCase"`, `"SCREAMING_SNAKE_CASE"`, `"lower"`,
 `"UPPER"`, `"verbatim"`.

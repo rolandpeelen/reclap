@@ -62,7 +62,7 @@ let order errors (specs : Spec.t list) =
 
 let all_errors classified = List.concat_map (fun c -> Diagnostic.to_list c.errors) classified
 
-let structure ~module_name (item : structure_item) rec_flag declarations =
+let structure ~module_name ~enums (item : structure_item) rec_flag declarations =
   let classified = classify declarations in
   if untouched classified then [ item ]
   else
@@ -71,7 +71,7 @@ let structure ~module_name (item : structure_item) rec_flag declarations =
         (fun c ->
           match c.classification with
           | Plain | Invalid -> None
-          | Derive derive -> Analyze.analyze c.errors ~module_name derive c.declaration)
+          | Derive derive -> Analyze.analyze c.errors ~module_name ~enums derive c.declaration)
         classified
     in
     let order_errors = Diagnostic.collector () in

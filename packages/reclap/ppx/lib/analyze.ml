@@ -237,6 +237,7 @@ type context = {
   errors : Diagnostic.collector;
   casing : Casing.t;  (** for long names and subcommand and value names *)
   env_casing : Casing.t;
+  enums : Enum_scope.t;  (** the value enums of this file, for [default] *)
 }
 
 let utf8_length text =
@@ -327,6 +328,36 @@ let reject_value_options errors ~kind_name entries =
             "`%s` is not supported for %s, which take no value." key kind_name)
     [ "default"; "valueName"; "valueParser"; "required" ]
 
+(* The constructors that a [default] names directly: the value itself for
+   [Set], each element of the array for [Append]. Any other expression is
+   left to the type checker. *)
+let rec default_constructors (expression : expression) =
+  match expression.pexp_desc with
+  | Pexp_constraint (inner, _) -> default_constructors inner
+  | Pexp_construct ({ txt = Lident name | Ldot (_, name); _ }, None) -> [ (name, expression.pexp_loc) ]
+  | Pexp_array items -> List.concat_map default_constructors items
+  | _ -> []
+
+(* A skipped value enum constructor has no name, so it cannot be shown as the
+   default in help or parsed back as the value. *)
+let check_default_values ctx value_parser default =
+  match (value_parser, default) with
+  | Some (Derived target), Some expression ->
+      let skipped = Enum_scope.skipped ctx.enums target in
+      List.iter
+        (fun (name, loc) ->
+          if List.mem name skipped then
+            Diagnostic.reportf ctx.errors loc
+              "The default `%s` is a skipped value of `%s` (@value(skip)): it has \
+               no name to show in help or to parse. Choose a value that is not \
+               skipped."
+              name
+              (match target.module_path with
+              | None -> target.type_name
+              | Some path -> longident_to_string path ^ "." ^ target.type_name))
+        (default_constructors expression)
+  | (Some (Builtin _ | Derived _ | Custom _) | None), (Some _ | None) -> ()
+
 let derive_name ~field_name ~casing (setting : Payload.name_setting) =
   match setting with
   | Derived -> Some (Casing.convert casing field_name)
@@ -409,10 +440,12 @@ let arg_field ctx (field : label_declaration) entries =
               | Some name -> name
               | None -> Casing.convert Screaming_snake field_name
             in
+            let value_parser = element_parser errors ~explicit:explicit_parser element in
+            check_default_values ctx value_parser default;
             Option.map
               (fun value_parser ->
                 Valued { value_action; value_parser; default; value_name; required; decoder })
-              (element_parser errors ~explicit:explicit_parser element)
+              value_parser
       in
       Option.map
         (fun kind ->
@@ -720,9 +753,10 @@ let analyze_enum_constructor ctx (constructor : constructor_declaration) =
 let parser_keys = [ "name"; "version"; "about"; "longAbout"; "author"; "renameAll"; "renameAllEnv" ]
 let rename_keys = [ "renameAll"; "renameAllEnv" ]
 
-let context errors entries =
+let context errors ~enums entries =
   {
     errors;
+    enums;
     casing = casing_option errors "renameAll" entries ~default:Kebab;
     env_casing = casing_option errors "renameAllEnv" entries ~default:Screaming_snake;
   }
@@ -764,7 +798,7 @@ let check_parameters errors (declaration : type_declaration) =
       Diagnostic.report errors declaration.ptype_loc
         "@clap types cannot have type parameters."
 
-let analyze errors ~module_name derive (declaration : type_declaration) =
+let analyze errors ~module_name ~enums derive (declaration : type_declaration) =
   check_parameters errors declaration;
   let attributes = declaration.ptype_attributes in
   let command_entries allowed =
@@ -779,19 +813,19 @@ let analyze errors ~module_name derive (declaration : type_declaration) =
         let command = analyze_command errors ~module_name declaration entries in
         Option.map
           (fun fields -> Parser_args (command, fields))
-          (analyze_fields (context errors entries) ~version:command.version fields)
+          (analyze_fields (context errors ~enums entries) ~version:command.version fields)
     | Parser, Ptype_variant constructors ->
         let entries = command_entries parser_keys in
         let command = analyze_command errors ~module_name declaration entries in
-        let ctx = context errors entries in
+        let ctx = context errors ~enums entries in
         Option.map
           (fun constructors -> Parser_subcommand (command, constructors))
           (analyze_subcommand_constructors ctx constructors)
     | Args_derive, Ptype_record fields ->
-        let ctx = context errors (command_entries rename_keys) in
+        let ctx = context errors ~enums (command_entries rename_keys) in
         Option.map (fun fields -> Args fields) (analyze_fields ctx ~version:None fields)
     | Subcommand_derive, Ptype_variant constructors ->
-        let ctx = context errors (command_entries rename_keys) in
+        let ctx = context errors ~enums (command_entries rename_keys) in
         Option.map
           (fun constructors -> Subcommand constructors)
           (analyze_subcommand_constructors ctx constructors)
@@ -800,7 +834,7 @@ let analyze errors ~module_name derive (declaration : type_declaration) =
           ~allowed:[ "value" ]
           (List.filter (fun a -> not (is_clap_attribute (Payload.attribute_name a))) attributes);
         let entries = options errors ~name:"value" ~allowed:[ "renameAll" ] attributes in
-        let ctx = context errors entries in
+        let ctx = context errors ~enums entries in
         Some (Value_enum (List.filter_map (analyze_enum_constructor ctx) constructors))
     | (Parser | Args_derive | Subcommand_derive | Value_enum_derive), _ ->
         kind_mismatch errors declaration derive;
