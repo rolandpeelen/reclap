@@ -16,6 +16,8 @@ type rec t = {
   subcommand: option<(string, t)>,
 }
 
+let make = (~command, ~context, ~entries, ~subcommand) => {command, context, entries, subcommand}
+
 let findArg = (matches, id) => matches.command.args->Array.find(arg => arg.id == id)
 
 let displayArg = (matches, id) => findArg(matches, id)->Option.mapOr(id, ClapArg.display)

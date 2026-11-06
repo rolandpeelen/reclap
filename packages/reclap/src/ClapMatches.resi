@@ -15,13 +15,17 @@ type entry = {
   source: valueSource,
 }
 
-type rec t = {
-  command: ClapCommand.t,
-  context: ClapError.context,
-  /** Read-only. Keyed by argument id; absent arguments have no entry. */
-  entries: Dict.t<entry>,
-  subcommand: option<(string, t)>,
-}
+/** The matches of one command level. Read them with the functions below. */
+type t
+
+/** Builds matches from the parser's results. `entries` is keyed by argument id. Used by the
+parser; applications receive matches from `Clap.getMatchesFrom` and friends. */
+let make: (
+  ~command: ClapCommand.t,
+  ~context: ClapError.context,
+  ~entries: Dict.t<entry>,
+  ~subcommand: option<(string, t)>,
+) => t
 
 /** Reads a `SetTrue` or `SetFalse` flag. An absent `SetTrue` flag is `false`; an absent `SetFalse` flag is `true`. */
 let getFlag: (t, string) => bool
