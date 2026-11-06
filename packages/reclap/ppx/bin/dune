@@ -1,10 +1,16 @@
 ; `dune build --profile static` links a fully static binary. Only the release
 ; workflow uses it, inside an Alpine (musl) container; glibc and macOS do not
 ; support fully static executables.
+;
+; Alpine's gcc builds PIE by default, so `-static` alone yields a static-pie.
+; ocamlopt links executables with `-Wl,-E`, which leaves a dynamic TLS
+; relocation for OCaml 5's thread-local `Caml_state` in a static-pie. musl's
+; static-pie startup cannot apply TLS relocations, so on x86_64 the binary
+; segfaults before `main`. `-no-pie` links a classic static executable instead.
 (env
  (static
   (flags
-   (:standard -ccopt -static))))
+   (:standard -ccopt -static -ccopt -no-pie))))
 
 (executable
  (name reclap_ppx)
