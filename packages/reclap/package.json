@@ -4,14 +4,19 @@
   "description": "Derive command line parsers from ReScript types, in the style of Rust's clap.",
   "type": "module",
   "license": "MIT",
-  "files": ["src", "rescript.json", "ppx.exe"],
+  "files": [
+    "src",
+    "rescript.json",
+    "ppx.exe"
+  ],
   "scripts": {
     "build:ppx": "dune build",
     "build": "npm run build:ppx && rescript build",
     "clean": "rescript clean && dune clean",
     "format": "rescript format && dune fmt 2>/dev/null || true",
-    "test:ppx": "dune test",
-    "test": "npm run build && vitest run && npm run test:ppx"
+    "test:ppx": "dune test && sh test/ppx/snapshot.sh --check && sh ppx/test/errors/run.sh",
+    "test": "npm run build && vitest run && npm run test:ppx",
+    "snapshot:ppx": "dune build && sh test/ppx/snapshot.sh"
   },
   "devDependencies": {
     "rescript": "12.3.1",

@@ -1,0 +1,322 @@
+module Remote =
+  struct
+    type nonrec addArgs =
+      {
+      name: string [@res.doc " Name of the remote "];
+      url: string [@res.doc " URL of the remote "]}
+    let (addArgsArgs : addArgs Clap.Args.t) =
+      Clap.Args.make
+        (fun [arity:1]__clap_command ->
+           let __clap_command =
+             Clap.Command.arg __clap_command
+               (Clap.Arg.help
+                  (Clap.Arg.valueParser
+                     (Clap.Arg.action
+                        (Clap.Arg.required
+                           (Clap.Arg.valueName (Clap.Arg.make {*j|name|*j})
+                              {*j|NAME|*j}) true) Clap.Arg.Set)
+                     Clap.ValueParser.string) {*j|Name of the remote|*j}) in
+           Clap.Command.arg __clap_command
+             (Clap.Arg.help
+                (Clap.Arg.valueParser
+                   (Clap.Arg.action
+                      (Clap.Arg.required
+                         (Clap.Arg.valueName (Clap.Arg.make {*j|url|*j})
+                            {*j|URL|*j}) true) Clap.Arg.Set)
+                   Clap.ValueParser.string) {*j|URL of the remote|*j}))
+        (fun [arity:1]__clap_matches ->
+           match Clap.Matches.getRequired __clap_matches {*j|name|*j}
+                   Clap.ValueParser.string
+           with
+           | Error __clap_error -> Error __clap_error
+           | Ok __clap_field_name ->
+               (match Clap.Matches.getRequired __clap_matches {*j|url|*j}
+                        Clap.ValueParser.string
+                with
+                | Error __clap_error -> Error __clap_error
+                | Ok __clap_field_url ->
+                    Ok
+                      ({ name = __clap_field_name; url = __clap_field_url } : 
+                      addArgs)))
+    type nonrec t =
+      | Add of addArgs [@res.doc " Adds a remote "]
+      | Remove of {
+      name: string } [@res.doc " Removes a remote "]
+      | List of {
+      verbose: bool } [@res.doc " Lists remotes "][@@res.doc
+                                                    " Manage remotes "]
+    let (subcommand : t Clap.Subcommand.t) =
+      Clap.Subcommand.make
+        (fun [arity:1]__clap_command ->
+           let __clap_command =
+             Clap.Command.subcommand __clap_command
+               (Clap.Args.augment addArgsArgs
+                  (Clap.Command.about (Clap.Command.make {*j|add|*j})
+                     {*j|Adds a remote|*j})) in
+           let __clap_command =
+             Clap.Command.subcommand __clap_command
+               (Clap.Command.arg
+                  (Clap.Command.visibleAlias
+                     (Clap.Command.alias
+                        (Clap.Command.about
+                           (Clap.Command.make {*j|remove|*j})
+                           {*j|Removes a remote|*j}) {*j|rm|*j})
+                     {*j|delete|*j})
+                  (Clap.Arg.valueParser
+                     (Clap.Arg.action
+                        (Clap.Arg.required
+                           (Clap.Arg.valueName (Clap.Arg.make {*j|name|*j})
+                              {*j|NAME|*j}) true) Clap.Arg.Set)
+                     Clap.ValueParser.string)) in
+           Clap.Command.subcommand __clap_command
+             (Clap.Command.arg
+                (Clap.Command.visibleAlias
+                   (Clap.Command.alias
+                      (Clap.Command.about (Clap.Command.make {*j|list|*j})
+                         {*j|Lists remotes|*j}) {*j|l|*j}) {*j|ls|*j})
+                (Clap.Arg.long
+                   (Clap.Arg.short
+                      (Clap.Arg.action (Clap.Arg.make {*j|verbose|*j})
+                         Clap.Arg.SetTrue) {*j|v|*j}) {*j|verbose|*j})))
+        (fun [arity:1]__clap_matches ->
+           match Clap.Matches.subcommand __clap_matches with
+           | Some ({*j|add|*j}, __clap_matches) ->
+               (match Clap.Args.fromMatches addArgsArgs __clap_matches with
+                | Error __clap_error -> Error __clap_error
+                | Ok __clap_value -> Ok (Add __clap_value : t))
+           | Some ({*j|remove|*j}, __clap_matches) ->
+               (match Clap.Matches.getRequired __clap_matches {*j|name|*j}
+                        Clap.ValueParser.string
+                with
+                | Error __clap_error -> Error __clap_error
+                | Ok __clap_field_name ->
+                    Ok (Remove { name = __clap_field_name } : t))
+           | Some ({*j|list|*j}, __clap_matches) ->
+               let __clap_field_verbose =
+                 Clap.Matches.getFlag __clap_matches {*j|verbose|*j} in
+               Ok (List { verbose = __clap_field_verbose } : t)
+           | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+  end
+type t = {
+  dir: string option ;
+  command: command }
+and command =
+  | Clone of
+  {
+  remote: string [@res.doc " The remote to clone "];
+  depth: int ;
+  dir: string option }
+  [@res.doc
+    " Clones repos\n\n  Clones a repository into a new directory. The directory is named after\n  the repository unless you pass one.\n\n  Shallow clones are supported. "]
+  | Status [@res.doc " Shows the working tree status "]
+  | Add of addArgs [@res.doc " Adds things "]
+  | Remote of Remote.t [@res.doc " Manages remotes "]
+  | Stash of stash option [@res.doc " Stashes changes "]
+  | Hidden 
+and addArgs = {
+  paths: string array [@res.doc " Files to add "];
+  force: bool }
+and stash =
+  | Push of {
+  message: string option } 
+  | Pop 
+  | Apply of {
+  stash: string option } 
+let (addArgsArgs : addArgs Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|paths|*j})
+                       {*j|PATHS|*j}) Clap.Arg.Append)
+                 Clap.ValueParser.string) {*j|Files to add|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.long
+            (Clap.Arg.short
+               (Clap.Arg.action (Clap.Arg.make {*j|force|*j})
+                  Clap.Arg.SetTrue) {*j|f|*j}) {*j|force|*j}))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getMany __clap_matches {*j|paths|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_paths ->
+           let __clap_field_force =
+             Clap.Matches.getFlag __clap_matches {*j|force|*j} in
+           Ok
+             ({ paths = __clap_field_paths; force = __clap_field_force } : 
+             addArgs))
+let (stashSubcommand : stash Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.arg (Clap.Command.make {*j|push|*j})
+              (Clap.Arg.long
+                 (Clap.Arg.short
+                    (Clap.Arg.valueParser
+                       (Clap.Arg.action
+                          (Clap.Arg.valueName (Clap.Arg.make {*j|message|*j})
+                             {*j|MESSAGE|*j}) Clap.Arg.Set)
+                       Clap.ValueParser.string) {*j|m|*j}) {*j|message|*j})) in
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.make {*j|pop|*j}) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.arg (Clap.Command.make {*j|apply|*j})
+            (Clap.Arg.valueParser
+               (Clap.Arg.action
+                  (Clap.Arg.valueName (Clap.Arg.make {*j|stash|*j})
+                     {*j|STASH|*j}) Clap.Arg.Set) Clap.ValueParser.string)))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|push|*j}, __clap_matches) ->
+           (match Clap.Matches.getOne __clap_matches {*j|message|*j}
+                    Clap.ValueParser.string
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_message ->
+                Ok (Push { message = __clap_field_message } : stash))
+       | Some ({*j|pop|*j}, _) -> Ok (Pop : stash)
+       | Some ({*j|apply|*j}, __clap_matches) ->
+           (match Clap.Matches.getOne __clap_matches {*j|stash|*j}
+                    Clap.ValueParser.string
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_stash ->
+                Ok (Apply { stash = __clap_field_stash } : stash))
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+let (commandSubcommand : command Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.arg
+              (Clap.Command.arg
+                 (Clap.Command.arg
+                    (Clap.Command.longAbout
+                       (Clap.Command.about (Clap.Command.make {*j|clone|*j})
+                          {*j|Clones repos|*j})
+                       {*j|Clones repos\n\nClones a repository into a new directory. The directory is named after the repository unless you pass one.\n\nShallow clones are supported.|*j})
+                    (Clap.Arg.help
+                       (Clap.Arg.valueParser
+                          (Clap.Arg.action
+                             (Clap.Arg.required
+                                (Clap.Arg.valueName
+                                   (Clap.Arg.make {*j|remote|*j})
+                                   {*j|REMOTE|*j}) true) Clap.Arg.Set)
+                          Clap.ValueParser.string)
+                       {*j|The remote to clone|*j}))
+                 (Clap.Arg.long
+                    (Clap.Arg.defaultValue
+                       (Clap.Arg.valueParser
+                          (Clap.Arg.action
+                             (Clap.Arg.valueName
+                                (Clap.Arg.make {*j|depth|*j}) {*j|DEPTH|*j})
+                             Clap.Arg.Set) Clap.ValueParser.int)
+                       Clap.ValueParser.int 1) {*j|depth|*j}))
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|dir|*j})
+                       {*j|DIR|*j}) Clap.Arg.Set) Clap.ValueParser.string)) in
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.about (Clap.Command.make {*j|status|*j})
+              {*j|Shows the working tree status|*j}) in
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Args.augment addArgsArgs
+              (Clap.Command.about (Clap.Command.make {*j|add|*j})
+                 {*j|Adds things|*j})) in
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Subcommand.augmentRequired Remote.subcommand
+              (Clap.Command.about (Clap.Command.make {*j|remote|*j})
+                 {*j|Manages remotes|*j})) in
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Subcommand.augment stashSubcommand
+              (Clap.Command.about (Clap.Command.make {*j|stash|*j})
+                 {*j|Stashes changes|*j})) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.hide (Clap.Command.make {*j|secret|*j})))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|clone|*j}, __clap_matches) ->
+           (match Clap.Matches.getRequired __clap_matches {*j|remote|*j}
+                    Clap.ValueParser.string
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_remote ->
+                (match Clap.Matches.getRequired __clap_matches {*j|depth|*j}
+                         Clap.ValueParser.int
+                 with
+                 | Error __clap_error -> Error __clap_error
+                 | Ok __clap_field_depth ->
+                     (match Clap.Matches.getOne __clap_matches {*j|dir|*j}
+                              Clap.ValueParser.string
+                      with
+                      | Error __clap_error -> Error __clap_error
+                      | Ok __clap_field_dir ->
+                          Ok
+                            (Clone
+                               {
+                                 remote = __clap_field_remote;
+                                 depth = __clap_field_depth;
+                                 dir = __clap_field_dir
+                               } : command))))
+       | Some ({*j|status|*j}, _) -> Ok (Status : command)
+       | Some ({*j|add|*j}, __clap_matches) ->
+           (match Clap.Args.fromMatches addArgsArgs __clap_matches with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_value -> Ok (Add __clap_value : command))
+       | Some ({*j|remote|*j}, __clap_matches) ->
+           (match Clap.Subcommand.fromMatches Remote.subcommand
+                    __clap_matches
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_value -> Ok (Remote __clap_value : command))
+       | Some ({*j|stash|*j}, __clap_matches) ->
+           (match Clap.Subcommand.fromMatchesOptional stashSubcommand
+                    __clap_matches
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_value -> Ok (Stash __clap_value : command))
+       | Some ({*j|secret|*j}, _) -> Ok (Hidden : command)
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.short
+                 (Clap.Arg.valueParser
+                    (Clap.Arg.action
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|dir|*j})
+                          {*j|PATH|*j}) Clap.Arg.Set) Clap.ValueParser.string)
+                 {*j|C|*j}) {*j|directory|*j}) in
+       Clap.Subcommand.augmentRequired commandSubcommand __clap_command)
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getOne __clap_matches {*j|dir|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_dir ->
+           (match Clap.Subcommand.fromMatches commandSubcommand
+                    __clap_matches
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_command ->
+                Ok
+                  ({ dir = __clap_field_dir; command = __clap_field_command } : 
+                  t)))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs
+    (Clap.Command.author
+       (Clap.Command.about (Clap.Command.make {*j|git-like|*j})
+          {*j|A fictional version control system|*j}) {*j|reclap|*j}) args
+let run [arity:1]argv = Clap.tryParseFrom parser argv
