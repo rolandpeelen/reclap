@@ -12,6 +12,7 @@ type t = {
   short: option<string>,
   long: option<string>,
   aliases: array<string>,
+  visibleAliases: array<string>,
   help: option<string>,
   longHelp: option<string>,
   valueName: option<string>,
@@ -29,6 +30,7 @@ let make = id => {
   short: None,
   long: None,
   aliases: [],
+  visibleAliases: [],
   help: None,
   longHelp: None,
   valueName: None,
@@ -46,6 +48,11 @@ let short = (arg, short) => {...arg, short: Some(short)}
 let long = (arg, long) => {...arg, long: Some(long)}
 
 let alias = (arg, alias) => {...arg, aliases: Array.concat(arg.aliases, [alias])}
+
+let visibleAlias = (arg, alias) => {
+  ...arg,
+  visibleAliases: Array.concat(arg.visibleAliases, [alias]),
+}
 
 let help = (arg, help) => {...arg, help: Some(help)}
 
