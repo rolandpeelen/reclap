@@ -46,6 +46,54 @@ module GreetJson = {
     ])
 }
 
+module GitJson = {
+  let globalOpts = (global: DerivedGit.globalOpts) =>
+    object([("directory", option(global.directory, string)), ("quiet", bool(global.quiet))])
+
+  let addArgs = (add: DerivedGit.addArgs) =>
+    object([("dry_run", bool(add.dryRun)), ("paths", array(add.paths, string))])
+
+  let remoteCommands = (command: DerivedGit.remoteCommands) =>
+    switch command {
+    | Add({name, url}) => variant("Add", object([("name", string(name)), ("url", string(url))]))
+    | Remove({name}) => variant("Remove", object([("name", string(name))]))
+    }
+
+  let stashCommands = (command: DerivedGit.stashCommands) =>
+    switch command {
+    | Push({message}) => variant("Push", object([("message", option(message, string))]))
+    | Pop({index}) => variant("Pop", object([("index", bool(index))]))
+    }
+
+  let commands = (command: DerivedGit.commands) =>
+    switch command {
+    | Clone({remote, directory, depth}) =>
+      variant(
+        "Clone",
+        object([
+          ("remote", string(remote)),
+          ("directory", option(directory, string)),
+          ("depth", option(depth, int)),
+        ]),
+      )
+    | Add(add) => variant("Add", addArgs(add))
+    | Status => string("Status")
+    | Commit({message, all}) =>
+      variant("Commit", object([("message", string(message)), ("all", bool(all))]))
+    | Remote({verbose, command}) =>
+      variant(
+        "Remote",
+        object([("verbose", bool(verbose)), ("command", option(command, remoteCommands))]),
+      )
+    | Stash(stash) => variant("Stash", stashCommands(stash))
+    | Gc => string("Gc")
+    | Rm({files}) => variant("Rm", object([("files", array(files, string))]))
+    }
+
+  let t = (git: DerivedGit.t) =>
+    object([("global", globalOpts(git.global)), ("command", commands(git.command))])
+}
+
 let replayDerived = (fileName, parser: Clap.Parser.t<'value>, toJson: 'value => JSON.t) => {
   let programName = Clap.Parser.command(parser).name
   let parse = (argv, env) => Clap.tryParseFrom(parser, argv, ~env)
@@ -70,3 +118,4 @@ let replayDerived = (fileName, parser: Clap.Parser.t<'value>, toJson: 'value => 
 }
 
 replayDerived("greet.json", DerivedGreet.parser, GreetJson.t)
+replayDerived("git.json", DerivedGit.parser, GitJson.t)
