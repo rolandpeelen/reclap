@@ -66,6 +66,18 @@ and macOS, `bin/ppx` is also a launcher that finds the binary when the package
 manager skips install scripts. On another platform, build the PPX from source
 with OCaml ≥ 5.1 and dune: `cd node_modules/reclap && dune build`.
 
+## Agent skill
+
+reclap ships an [agent skill](https://agentskills.io) that teaches coding
+agents the attributes, field types and error messages:
+
+```sh
+npx skills add rolandpeelen/reclap
+```
+
+The npm package contains it too, as `node_modules/reclap/skills/reclap`, so
+`npx skills experimental_sync` picks it up from the dependency.
+
 ## How it works
 
 Like `clap_derive`, the PPX does not parse anything itself. For each annotated
@@ -204,6 +216,8 @@ npm test                # dune build, rescript build, vitest, PPX tests
 | `reference/clap-fixtures`              | the Rust CLIs that produce the golden fixtures          |
 | `docs/design.md`                       | attribute surface and generated code                    |
 | `docs/clap-output-format.md`           | clap 4's help, usage and error format, as implemented   |
+| `packages/reclap/skills/reclap`        | the agent skill for users of reclap                     |
+| `agents/skills`                        | skills for developing this repository; not published    |
 
 ReScript 12 hands PPXes a frozen OCaml 4.06-shaped AST (`Parsetree0`) that
 ppxlib no longer reads, so the PPX carries a verbatim copy of that AST

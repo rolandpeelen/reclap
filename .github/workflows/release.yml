@@ -315,6 +315,10 @@ jobs:
       - name: Add the README
         run: cp README.md packages/reclap/README.md
 
+      - name: Check the package contents
+        working-directory: packages/reclap
+        run: npm run check:package
+
       - name: Pack
         if: env.DRY_RUN == 'true'
         working-directory: packages/reclap

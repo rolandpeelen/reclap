@@ -57,3 +57,8 @@ jobs:
 
       - name: Check formatting
         run: npx rescript format --check
+
+      # Only the runtime, the PPX and skills/reclap may ship; never the
+      # repository's own development skills or test files.
+      - name: Check the npm package contents
+        run: npm run check:package

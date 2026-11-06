@@ -23,6 +23,7 @@
   "files": [
     "src",
     "rescript.json",
+    "skills/reclap/SKILL.md",
     "bin",
     "postinstall.js",
     "dune",
@@ -38,7 +39,8 @@
     "format": "rescript format && dune fmt 2>/dev/null || true",
     "test:ppx": "dune test && sh test/ppx/snapshot.sh --check && sh ppx/test/errors/run.sh",
     "test": "npm run build && vitest run && npm run test:ppx",
-    "snapshot:ppx": "dune build && sh test/ppx/snapshot.sh"
+    "snapshot:ppx": "dune build && sh test/ppx/snapshot.sh",
+    "check:package": "node scripts/check-package.mjs"
   },
   "devDependencies": {
     "rescript": "12.3.1",

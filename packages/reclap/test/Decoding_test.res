@@ -221,3 +221,25 @@ describe("standard library module types", () => {
     )
   })
 })
+
+describe("custom value parser from the agent skill", () => {
+  let parser = Clap.Parser.fromArgs(Clap.Command.make("serve"), SkillSnippets.CustomValues.args)
+  let parse = argv =>
+    Clap.tryParseFrom(parser, Array.concat(["serve"], argv), ~env=Dict.make())->Result.mapError(
+      Clap.Error.render,
+    )
+
+  test("uses the typed default and parses values", () => {
+    expect(parse([]))->toEqual(Ok(({port: Port(8080)}: SkillSnippets.CustomValues.t)))
+    expect(parse(["--port", "3000"]))->toEqual(
+      Ok(({port: Port(3000)}: SkillSnippets.CustomValues.t)),
+    )
+  })
+  test("reports the parser's error", () => {
+    expect(parse(["--port", "0"]))->toEqual(
+      Error(
+        "error: invalid value '0' for '--port <PORT>': not a port number\n\nFor more information, try '--help'.\n",
+      ),
+    )
+  })
+})
