@@ -94,6 +94,10 @@ let getManyOptional = (matches, id, valueParser) =>
 let getMany = (matches, id, valueParser) =>
   getManyOptional(matches, id, valueParser)->Result.map(values => values->Option.getOr([]))
 
+let getRaw = (matches, id) => matches.entries->Dict.get(id)->Option.map(entry => entry.values)
+
+let ids = matches => matches.entries->Dict.keysToArray->Array.toSorted(String.compare)
+
 let contains = (matches, id) => matches.entries->Dict.get(id)->Option.isSome
 
 let valueSource = (matches, id) => matches.entries->Dict.get(id)->Option.map(entry => entry.source)

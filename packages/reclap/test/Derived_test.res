@@ -7,8 +7,6 @@ external tagging for enums (a unit variant is a string, a struct or newtype vari
 `{"Name": {...}}`), a `ValueEnum` is its variant name, `Option` is `null` when absent and
 `Vec` is `[]` when absent. */
 
-open Vitest
-
 let string = (text: string) => JSON.String(text)
 let int = (value: int) => JSON.Number(Int.toFloat(value))
 let bool = (value: bool) => JSON.Boolean(value)
@@ -98,23 +96,7 @@ let replayDerived = (fileName, parser: Clap.Parser.t<'value>, toJson: 'value => 
   let programName = Clap.Parser.command(parser).name
   let parse = (argv, env) => Clap.tryParseFrom(parser, argv, ~env)
   FixtureReplay.replay(fileName, ~programName, parse)
-  describe(`${fileName} parsed values`, () =>
-    FixtureReplay.loadCases(fileName)->Array.forEach(fixtureCase =>
-      switch fixtureCase.parsedValue {
-      | None => ()
-      | Some(expected) =>
-        test(
-          fixtureCase.name,
-          () =>
-            expect(
-              parse(FixtureReplay.argvOf(fixtureCase, ~programName), fixtureCase.env)->Result.map(
-                toJson,
-              ),
-            )->toEqual(Ok(expected)),
-        )
-      }
-    )
-  )
+  FixtureReplay.replayParsedValues(fileName, ~programName, parse, toJson)
 }
 
 replayDerived("greet.json", DerivedGreet.parser, GreetJson.t)
