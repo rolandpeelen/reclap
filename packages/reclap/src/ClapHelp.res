@@ -160,8 +160,7 @@ let specValues = (arg: ClapArg.t, ~env, ~includePossibleValues) => {
   let possibleValues = switch visiblePossibleValues(arg) {
   | [] => None
   | _ if !includePossibleValues => None
-  | values =>
-    Some(`[possible values: ${values->Array.map(value => value.name)->Array.join(", ")}]`)
+  | values => Some(`[possible values: ${values->Array.map(value => value.name)->Array.join(", ")}]`)
   }
   [envValue, defaultValue, aliases, possibleValues]->Array.keepSome
 }
@@ -190,7 +189,8 @@ let renderShortArgText = (command, arg, ~env) =>
   )
 
 let renderPossibleValuesBlock = (values: array<ClapPossibleValue.t>) => {
-  let longest = values->Array.reduce(0, (longest, value) => Math.Int.max(longest, width(value.name)))
+  let longest =
+    values->Array.reduce(0, (longest, value) => Math.Int.max(longest, width(value.name)))
   let lines = values->Array.map(value =>
     switch value.help {
     | None => `${longNewline}- ${value.name}`
@@ -202,9 +202,10 @@ let renderPossibleValuesBlock = (values: array<ClapPossibleValue.t>) => {
 }
 
 let renderLongArgText = (command, arg, ~env) => {
-  let text = helpText(command, arg, Long)->Option.mapOr("", text =>
-    text->String.replaceAll("\n", longNewline)
-  )
+  let text =
+    helpText(command, arg, Long)->Option.mapOr("", text =>
+      text->String.replaceAll("\n", longNewline)
+    )
   let values = visiblePossibleValues(arg)
   let hasBlock = values->Array.some(possibleValueHasHelp)
   let textWithBlock = switch (text, hasBlock) {
@@ -223,10 +224,14 @@ let renderArgItems = (command, args, ~mode, ~env) =>
   switch (mode, hasLongHelp(command)) {
   | (Long, true) =>
     args
-    ->Array.map(arg => `  ${renderItemSpec(arg)}${longNewline}${renderLongArgText(command, arg, ~env)}`)
+    ->Array.map(arg =>
+      `  ${renderItemSpec(arg)}${longNewline}${renderLongArgText(command, arg, ~env)}`
+    )
     ->Array.join("\n\n")
   | (Short, _) | (Long, false) =>
-    renderShortItems(args->Array.map(arg => (renderItemSpec(arg), renderShortArgText(command, arg, ~env))))
+    renderShortItems(
+      args->Array.map(arg => (renderItemSpec(arg), renderShortArgText(command, arg, ~env))),
+    )
   }
 
 let renderSubcommandItems = subcommands =>
@@ -237,10 +242,11 @@ let renderSubcommandItems = subcommands =>
       | (None, None) => []
       }
       let aliases =
-        renderAliases(~singular="alias", ~plural="aliases", subcommand.visibleAliases)->Option.mapOr(
-          [],
-          aliases => [aliases],
-        )
+        renderAliases(
+          ~singular="alias",
+          ~plural="aliases",
+          subcommand.visibleAliases,
+        )->Option.mapOr([], aliases => [aliases])
       (subcommand.name, joinWords(Array.concat(about, aliases)))
     }),
   )

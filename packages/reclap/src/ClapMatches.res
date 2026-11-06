@@ -24,8 +24,8 @@ let getFlag = (matches, id) =>
   switch (matches.entries->Dict.get(id), findArg(matches, id)) {
   | (Some({values, _}), _) => values->Array.last->Option.mapOr(false, value => value == "true")
   | (None, Some({action: SetFalse, _})) => true
-  | (None, Some({action: Set | Append | SetTrue | Count | Help | Version, _})) | (None, None) =>
-    false
+  | (None, Some({action: Set | Append | SetTrue | Count | Help | Version, _}))
+  | (None, None) => false
   }
 
 let getCount = (matches, id) =>
@@ -87,7 +87,8 @@ let getRequired = (matches, id, valueParser) =>
 let getManyOptional = (matches, id, valueParser) =>
   switch matches.entries->Dict.get(id) {
   | None => Ok(None)
-  | Some({values, _}) => parseValues(matches, id, valueParser, values)->Result.map(values => Some(values))
+  | Some({values, _}) =>
+    parseValues(matches, id, valueParser, values)->Result.map(values => Some(values))
   }
 
 let getMany = (matches, id, valueParser) =>
@@ -99,16 +100,10 @@ let valueSource = (matches, id) => matches.entries->Dict.get(id)->Option.map(ent
 
 let subcommand = matches => matches.subcommand
 
-/** Lists every subcommand name and alias, hidden ones too, as clap's `MissingSubcommand` does. */
-let allSubcommandNames = (command: ClapCommand.t) =>
-  command.subcommands->Array.flatMap(subcommand =>
-    Array.concatMany([subcommand.name], [subcommand.aliases, subcommand.visibleAliases])
-  )
-
 let missingSubcommand = matches => Error(
   ClapError.MissingSubcommand({
     context: matches.context,
     name: matches.context.path->Array.join(" "),
-    subcommands: allSubcommandNames(ClapCommand.build(matches.command)),
+    subcommands: ClapCommandDefinition.allSubcommandNames(ClapCommand.build(matches.command)),
   }),
 )

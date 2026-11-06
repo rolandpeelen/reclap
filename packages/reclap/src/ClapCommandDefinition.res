@@ -41,9 +41,11 @@ let isSomeString = (option: option<string>, value: string) =>
   | None => false
   }
 
-let hasArgWithLong = (command, long) => command.args->Array.some(arg => isSomeString(arg.long, long))
+let hasArgWithLong = (command, long) =>
+  command.args->Array.some(arg => isSomeString(arg.long, long))
 
-let hasArgWithShort = (command, short) => command.args->Array.some(arg => isSomeString(arg.short, short))
+let hasArgWithShort = (command, short) =>
+  command.args->Array.some(arg => isSomeString(arg.short, short))
 
 let hasArgWithId = (command, id) => command.args->Array.some(arg => arg.id == id)
 
@@ -98,14 +100,19 @@ let addHelpSubcommand = command =>
   | subcommands => {...command, subcommands: Array.concat(subcommands, [helpSubcommand])}
   }
 
-/** Adds `-h, --help`, `-V, --version` when a version is set, and the `help` subcommand when
-there are subcommands, unless the command already defines them. Mirrors `Command::build`
-for one level; the parser builds each subcommand when it enters it. Idempotent. */
-let build = command => command->addHelpArg->addVersionArg->addHelpSubcommand
-
 /** Returns whether this is the automatic `help` subcommand that `build` adds. */
 let isHelpSubcommand = command =>
   command.name == "help" && isSomeString(command.about, helpSubcommandAbout)
+
+/** Adds `-h, --help`, `-V, --version` when a version is set, and the `help` subcommand when
+there are subcommands, unless the command already defines them. Mirrors `Command::build`
+for one level; the parser builds each subcommand when it enters it. The automatic `help`
+subcommand gets no `-h`, as in clap. Idempotent. */
+let build = command =>
+  switch isHelpSubcommand(command) {
+  | true => command
+  | false => command->addHelpArg->addVersionArg->addHelpSubcommand
+  }
 
 let positionals = command => command.args->Array.filter(ClapArg.isPositional)
 
@@ -115,7 +122,8 @@ let findLong = (command, long) =>
   command.args->Array.find(arg =>
     isSomeString(arg.long, long) ||
     arg.aliases->Array.includes(long) ||
-    arg.visibleAliases->Array.includes(long))
+    arg.visibleAliases->Array.includes(long)
+  )
 
 let findShort = (command, short) => command.args->Array.find(arg => isSomeString(arg.short, short))
 
@@ -124,4 +132,10 @@ let findSubcommand = (command, name) =>
     subcommand.name == name ||
     subcommand.aliases->Array.includes(name) ||
     subcommand.visibleAliases->Array.includes(name)
+  )
+
+/** Lists every subcommand name and alias, hidden ones too, as clap's `MissingSubcommand` does. */
+let allSubcommandNames = command =>
+  command.subcommands->Array.flatMap(subcommand =>
+    Array.concatMany([subcommand.name], [subcommand.aliases, subcommand.visibleAliases])
   )

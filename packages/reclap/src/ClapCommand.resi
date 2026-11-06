@@ -4,7 +4,9 @@ Mirrors `clap::Command`. Every function returns a new definition. The parser add
 `-h, --help`, `-V, --version` (when a version is set) and a `help` subcommand (when
 there are subcommands) unless arguments or subcommands with those names exist. */
 
-type rec t = {
+/** The fields are public; the equation with the internal `ClapCommandDefinition.t` lets the
+parser and the help renderer share the type without a module cycle. */
+type rec t = ClapCommandDefinition.t = {
   name: string,
   aliases: array<string>,
   visibleAliases: array<string>,

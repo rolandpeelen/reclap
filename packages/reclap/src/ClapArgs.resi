@@ -8,7 +8,10 @@ type t<'value> = {
 }
 
 /** Creates the argument set from a function that adds the arguments to a command and a decoder. */
-let make: (ClapCommand.t => ClapCommand.t, ClapMatches.t => result<'value, ClapError.t>) => t<'value>
+let make: (
+  ClapCommand.t => ClapCommand.t,
+  ClapMatches.t => result<'value, ClapError.t>,
+) => t<'value>
 
 /** Adds the arguments to a command. Mirrors `Args::augment_args`. */
 let augment: (t<'value>, ClapCommand.t) => ClapCommand.t
