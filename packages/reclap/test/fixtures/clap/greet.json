@@ -1,0 +1,1173 @@
+{
+  "cli": "greet",
+  "clapVersion": "4.6.7",
+  "cases": [
+    {
+      "name": "short-help",
+      "argv": [
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Simple program to greet a person\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nArguments:\n  [GREETING]  Greeting to use instead of \"Hello\"\n\nOptions:\n  -n, --name <NAME>      Name of the person to greet\n  -c, --count <COUNT>    Number of times to greet [default: 1]\n  -v...                  Increase verbosity\n  -t, --tag <TAG>        Tag to attach (repeatable)\n      --lang <LANG>      Language of the greeting [env: GREET_LANG=]\n      --color <COLOR>    Colour of the output [default: auto] [possible values: always, never, auto]\n      --offset <OFFSET>  Offset added to the count [default: 0]\n  -s, --shout            Shout the greeting\n  -h, --help             Print help (see more with '--help')\n  -V, --version          Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "long-help",
+      "argv": [
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Simple program to greet a person\n\nGreets NAME a number of times. This second paragraph only appears in the long help (`--help`), as clap's `long_about`.\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nArguments:\n  [GREETING]\n          Greeting to use instead of \"Hello\"\n\nOptions:\n  -n, --name <NAME>\n          Name of the person to greet\n\n  -c, --count <COUNT>\n          Number of times to greet\n          \n          [default: 1]\n\n  -v...\n          Increase verbosity\n\n  -t, --tag <TAG>\n          Tag to attach (repeatable)\n\n      --lang <LANG>\n          Language of the greeting\n          \n          [env: GREET_LANG=]\n\n      --color <COLOR>\n          Colour of the output\n\n          Possible values:\n          - always: Always colour the output\n          - never:  Never colour the output\n          - auto:   Colour the output when stdout is a terminal\n          \n          [default: auto]\n\n      --offset <OFFSET>\n          Offset added to the count\n          \n          [default: 0]\n\n  -s, --shout\n          Shout the greeting.\n          \n          Prints the greeting in upper case and appends an exclamation mark. Only `--help` shows this paragraph.\n\n  -h, --help\n          Print help (see a summary with '-h')\n\n  -V, --version\n          Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "short-version",
+      "argv": [
+        "-V"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "greet 1.0.0\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "long-version",
+      "argv": [
+        "--version"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "greet 1.0.0\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-after-args",
+      "argv": [
+        "-n",
+        "x",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Simple program to greet a person\n\nGreets NAME a number of times. This second paragraph only appears in the long help (`--help`), as clap's `long_about`.\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nArguments:\n  [GREETING]\n          Greeting to use instead of \"Hello\"\n\nOptions:\n  -n, --name <NAME>\n          Name of the person to greet\n\n  -c, --count <COUNT>\n          Number of times to greet\n          \n          [default: 1]\n\n  -v...\n          Increase verbosity\n\n  -t, --tag <TAG>\n          Tag to attach (repeatable)\n\n      --lang <LANG>\n          Language of the greeting\n          \n          [env: GREET_LANG=]\n\n      --color <COLOR>\n          Colour of the output\n\n          Possible values:\n          - always: Always colour the output\n          - never:  Never colour the output\n          - auto:   Colour the output when stdout is a terminal\n          \n          [default: auto]\n\n      --offset <OFFSET>\n          Offset added to the count\n          \n          [default: 0]\n\n  -s, --shout\n          Shout the greeting.\n          \n          Prints the greeting in upper case and appends an exclamation mark. Only `--help` shows this paragraph.\n\n  -h, --help\n          Print help (see a summary with '-h')\n\n  -V, --version\n          Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "long-help-with-env-set",
+      "argv": [
+        "--help"
+      ],
+      "env": {
+        "GREET_LANG": "fr"
+      },
+      "exitCode": 0,
+      "stdout": "Simple program to greet a person\n\nGreets NAME a number of times. This second paragraph only appears in the long help (`--help`), as clap's `long_about`.\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nArguments:\n  [GREETING]\n          Greeting to use instead of \"Hello\"\n\nOptions:\n  -n, --name <NAME>\n          Name of the person to greet\n\n  -c, --count <COUNT>\n          Number of times to greet\n          \n          [default: 1]\n\n  -v...\n          Increase verbosity\n\n  -t, --tag <TAG>\n          Tag to attach (repeatable)\n\n      --lang <LANG>\n          Language of the greeting\n          \n          [env: GREET_LANG=fr]\n\n      --color <COLOR>\n          Colour of the output\n\n          Possible values:\n          - always: Always colour the output\n          - never:  Never colour the output\n          - auto:   Colour the output when stdout is a terminal\n          \n          [default: auto]\n\n      --offset <OFFSET>\n          Offset added to the count\n          \n          [default: 0]\n\n  -s, --shout\n          Shout the greeting.\n          \n          Prints the greeting in upper case and appends an exclamation mark. Only `--help` shows this paragraph.\n\n  -h, --help\n          Print help (see a summary with '-h')\n\n  -V, --version\n          Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-subcommand-absent",
+      "argv": [
+        "help"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --name <NAME>\n\nUsage: greet --name <NAME> <GREETING>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "empty-argv",
+      "argv": [],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --name <NAME>\n\nUsage: greet --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "long-equals",
+      "argv": [
+        "--name=Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "long-space",
+      "argv": [
+        "--name",
+        "Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "short-attached",
+      "argv": [
+        "-nAnn"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "short-space",
+      "argv": [
+        "-n",
+        "Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "short-equals",
+      "argv": [
+        "-n=Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "count-vvv",
+      "argv": [
+        "-n",
+        "Ann",
+        "-vvv"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 3,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 3, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "count-separate",
+      "argv": [
+        "-v",
+        "-n",
+        "Ann",
+        "-v"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 2,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 2, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "combined-flags-then-value",
+      "argv": [
+        "-vn",
+        "Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 1,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 1, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "combined-flags-attached-value",
+      "argv": [
+        "-vsnAnn"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 1,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": true
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 1, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: true }"
+      }
+    },
+    {
+      "name": "default-fallback",
+      "argv": [
+        "--name",
+        "Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "explicit-count",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count",
+        "3"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 3,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 3, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "explicit-count-short-attached",
+      "argv": [
+        "--name",
+        "Ann",
+        "-c4"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 4,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 4, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "positional",
+      "argv": [
+        "--name",
+        "Ann",
+        "Hi"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": "Hi",
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: Some(\"Hi\"), tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "double-dash-positional",
+      "argv": [
+        "--name",
+        "Ann",
+        "--",
+        "-dashed"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": "-dashed",
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: Some(\"-dashed\"), tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "double-dash-then-option-like",
+      "argv": [
+        "--name",
+        "Ann",
+        "--",
+        "--count"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": "--count",
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: Some(\"--count\"), tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "append-repeated",
+      "argv": [
+        "-n",
+        "Ann",
+        "-t",
+        "a",
+        "--tag",
+        "b",
+        "--tag=c",
+        "-td"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [\"a\", \"b\", \"c\", \"d\"], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "env-fallback",
+      "argv": [
+        "--name",
+        "Ann"
+      ],
+      "env": {
+        "GREET_LANG": "fr"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": "fr",
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: Some(\"fr\"), color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "env-overridden-by-arg",
+      "argv": [
+        "--name",
+        "Ann",
+        "--lang",
+        "de"
+      ],
+      "env": {
+        "GREET_LANG": "fr"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": "de",
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: Some(\"de\"), color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "env-empty",
+      "argv": [
+        "--name",
+        "Ann"
+      ],
+      "env": {
+        "GREET_LANG": ""
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": "",
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: Some(\"\"), color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "value-enum",
+      "argv": [
+        "--name",
+        "Ann",
+        "--color",
+        "always"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Always",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Always, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "value-enum-alias",
+      "argv": [
+        "--name",
+        "Ann",
+        "--color",
+        "off"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Never",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Never, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "negative-number-equals",
+      "argv": [
+        "--name",
+        "Ann",
+        "--offset=-3"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": -3,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: -3, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "negative-number-attached-short-like",
+      "argv": [
+        "--name",
+        "Ann",
+        "--offset",
+        "-3"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-3' found\n\n  tip: to pass '-3' as a value, use '-- -3'\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hidden-arg",
+      "argv": [
+        "--name",
+        "Ann",
+        "--secret",
+        "s"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": "s",
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: Some(\"s\"), shout: false }"
+      }
+    },
+    {
+      "name": "bool-flag",
+      "argv": [
+        "--name",
+        "Ann",
+        "--shout"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": true
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: true }"
+      }
+    },
+    {
+      "name": "positional-before-options",
+      "argv": [
+        "Hi",
+        "--name",
+        "Ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": "Hi",
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: Some(\"Hi\"), tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "single-dash-positional",
+      "argv": [
+        "--name",
+        "Ann",
+        "-"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "Ann",
+          "count": 1,
+          "verbose": 0,
+          "greeting": "-",
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"Ann\", count: 1, verbose: 0, greeting: Some(\"-\"), tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "missing-required",
+      "argv": [],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --name <NAME>\n\nUsage: greet --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-required-with-other-args",
+      "argv": [
+        "-v",
+        "Hi"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --name <NAME>\n\nUsage: greet --name <NAME> -v... <GREETING>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-long-at-end",
+      "argv": [
+        "--name"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '--name <NAME>' but none was supplied\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-short-at-end",
+      "argv": [
+        "-n"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '--name <NAME>' but none was supplied\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-before-flag",
+      "argv": [
+        "--name",
+        "--shout"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '--name <NAME>' but none was supplied\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-equals-empty",
+      "argv": [
+        "--name="
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "name": "",
+          "count": 1,
+          "verbose": 0,
+          "greeting": null,
+          "tag": [],
+          "lang": null,
+          "color": "Auto",
+          "offset": 0,
+          "secret": null,
+          "shout": false
+        },
+        "debug": "Greet { name: \"\", count: 1, verbose: 0, greeting: None, tag: [], lang: None, color: Auto, offset: 0, secret: None, shout: false }"
+      }
+    },
+    {
+      "name": "unknown-long-with-suggestion",
+      "argv": [
+        "--name",
+        "Ann",
+        "--cout",
+        "2"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--cout' found\n\n  tip: a similar argument exists: '--count'\n\nUsage: greet --name <NAME> --count <COUNT> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-long-without-suggestion",
+      "argv": [
+        "--name",
+        "Ann",
+        "--zzz"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--zzz' found\n\n  tip: to pass '--zzz' as a value, use '-- --zzz'\n\nUsage: greet --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-short",
+      "argv": [
+        "--name",
+        "Ann",
+        "-x"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-x' found\n\n  tip: to pass '-x' as a value, use '-- -x'\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-short-in-cluster",
+      "argv": [
+        "--name",
+        "Ann",
+        "-vx"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-x' found\n\n  tip: to pass '-x' as a value, use '-- -x'\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unexpected-extra-positional",
+      "argv": [
+        "--name",
+        "Ann",
+        "Hi",
+        "extra"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'extra' found\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-int",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count",
+        "abc"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'abc' for '--count <COUNT>': invalid digit found in string\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-int-too-large",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count",
+        "300"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '300' for '--count <COUNT>': 300 is not in 0..=255\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-int-negative-for-unsigned",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count=-1"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '-1' for '--count <COUNT>': -1 is not in 0..=255\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-int-empty",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count="
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '' for '--count <COUNT>': cannot parse integer from empty string\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "negative-number-unsigned-space",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count",
+        "-1"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-1' found\n\n  tip: to pass '-1' as a value, use '-- -1'\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-value-enum-with-suggestion",
+      "argv": [
+        "--name",
+        "Ann",
+        "--color",
+        "alwys"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'alwys' for '--color <COLOR>'\n  [possible values: always, never, auto]\n\n  tip: a similar value exists: 'always'\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-enum",
+      "argv": [
+        "--name",
+        "Ann",
+        "--color"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '--color <COLOR>' but none was supplied\n  [possible values: always, never, auto]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-value-enum-without-suggestion",
+      "argv": [
+        "--name",
+        "Ann",
+        "--color",
+        "purple"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'purple' for '--color <COLOR>'\n  [possible values: always, never, auto]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-with-value",
+      "argv": [
+        "--name",
+        "Ann",
+        "--shout=x"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected value 'x' for '--shout' found; no more were expected\n\nUsage: greet --name <NAME> --shout [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-with-empty-value",
+      "argv": [
+        "--name",
+        "Ann",
+        "--shout="
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected value '' for '--shout' found; no more were expected\n\nUsage: greet --name <NAME> --shout [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "repeated-single-value-arg",
+      "argv": [
+        "--name",
+        "Ann",
+        "--name",
+        "Bob"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the argument '--name <NAME>' cannot be used multiple times\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "repeated-single-value-arg-long-and-short",
+      "argv": [
+        "--name",
+        "Ann",
+        "--count",
+        "3",
+        "-c4"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the argument '--count <COUNT>' cannot be used multiple times\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "repeated-flag",
+      "argv": [
+        "--name",
+        "Ann",
+        "--shout",
+        "--shout"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the argument '--shout' cannot be used multiple times\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "repeated-short-flag",
+      "argv": [
+        "--name",
+        "Ann",
+        "-ss"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the argument '--shout' cannot be used multiple times\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-argument-looks-like-positional-dash",
+      "argv": [
+        "--name",
+        "Ann",
+        "-dashed"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-d' found\n\n  tip: to pass '-d' as a value, use '-- -d'\n\nUsage: greet [OPTIONS] --name <NAME> [GREETING]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    }
+  ]
+}

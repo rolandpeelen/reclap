@@ -1,0 +1,165 @@
+module Level =
+  struct
+    type nonrec t =
+      | Debug [@res.doc " Everything "]
+      | Info
+      [@res.doc " Normal output.\n\n    Long text is not used for values. "]
+      | Warning 
+      | Error 
+      | Trace 
+      | Internal 
+    let (valueParser : t Clap.ValueParser.t) =
+      Clap.ValueParser.enum
+        [|((Debug : t),
+            (Clap.PossibleValue.help (Clap.PossibleValue.make {*j|debug|*j})
+               {*j|Everything|*j}));((Info : t),
+                                      (Clap.PossibleValue.help
+                                         (Clap.PossibleValue.make
+                                            {*j|info|*j})
+                                         {*j|Normal output|*j}));((Warning : 
+                                                                   t),
+                                                                   (Clap.PossibleValue.alias
+                                                                    (Clap.PossibleValue.make
+                                                                    {*j|warn|*j})
+                                                                    {*j|warning|*j}));
+          ((Error : t),
+            (Clap.PossibleValue.alias
+               (Clap.PossibleValue.alias
+                  (Clap.PossibleValue.help
+                     (Clap.PossibleValue.make {*j|error|*j})
+                     {*j|Only errors|*j}) {*j|err|*j}) {*j|e|*j}));((Trace : 
+                                                                    t),
+                                                                    (Clap.PossibleValue.hide
+                                                                    (Clap.PossibleValue.make
+                                                                    {*j|trace|*j})))|]
+  end
+type nonrec colorChoice =
+  | Always 
+  | AutoDetect 
+  | Never 
+let (colorChoiceValueParser : colorChoice Clap.ValueParser.t) =
+  Clap.ValueParser.enum
+    [|((Always : colorChoice), (Clap.PossibleValue.make {*j|ALWAYS|*j}));
+      ((AutoDetect : colorChoice),
+        (Clap.PossibleValue.make {*j|AUTO_DETECT|*j}));((Never : colorChoice),
+                                                         (Clap.PossibleValue.make
+                                                            {*j|NEVER|*j}))|]
+type nonrec format =
+  | JsonLines 
+  | PlainText 
+let (formatValueParser : format Clap.ValueParser.t) =
+  Clap.ValueParser.enum
+    [|((JsonLines : format), (Clap.PossibleValue.make {*j|JsonLines|*j}));
+      ((PlainText : format), (Clap.PossibleValue.make {*j|PlainText|*j}))|]
+let (percent : int Clap.ValueParser.t) =
+  Clap.ValueParser.make
+    (fun [arity:1]raw ->
+       match Int.fromString raw with
+       | Some n when (n >= 0) && (n <= 100) -> Ok n
+       | Some _|None -> Error {*j|not a percentage|*j})
+    (fun [arity:1]n -> Int.toString n)
+type nonrec options =
+  {
+  level: Level.t ;
+  color: colorChoice option ;
+  formats: format array ;
+  quality: int ;
+  dryRun: bool ;
+  ratio: float option }
+let (optionsArgs : options Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.defaultValue
+                 (Clap.Arg.valueParser
+                    (Clap.Arg.action
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|level|*j})
+                          {*j|LEVEL|*j}) Clap.Arg.Set) Level.valueParser)
+                 Level.valueParser Level.Info) {*j|level|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|color|*j})
+                       {*j|COLOR|*j}) Clap.Arg.Set) colorChoiceValueParser)
+              {*j|color|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.defaultValues
+                 (Clap.Arg.valueParser
+                    (Clap.Arg.action
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|formats|*j})
+                          {*j|FORMATS|*j}) Clap.Arg.Append) formatValueParser)
+                 formatValueParser [|JsonLines|]) {*j|formats|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.required
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|quality|*j})
+                          {*j|QUALITY|*j}) true) Clap.Arg.Set) percent)
+              {*j|quality|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.long
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.required
+                       (Clap.Arg.valueName (Clap.Arg.make {*j|dryRun|*j})
+                          {*j|DRY_RUN|*j}) true) Clap.Arg.Set)
+                 Clap.ValueParser.bool) {*j|dry-run|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.long
+            (Clap.Arg.valueParser
+               (Clap.Arg.action
+                  (Clap.Arg.valueName (Clap.Arg.make {*j|ratio|*j})
+                     {*j|RATIO|*j}) Clap.Arg.Set) Clap.ValueParser.float)
+            {*j|ratio|*j}))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getRequired __clap_matches {*j|level|*j}
+               Level.valueParser
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_level ->
+           (match Clap.Matches.getOne __clap_matches {*j|color|*j}
+                    colorChoiceValueParser
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_color ->
+                (match Clap.Matches.getMany __clap_matches {*j|formats|*j}
+                         formatValueParser
+                 with
+                 | Error __clap_error -> Error __clap_error
+                 | Ok __clap_field_formats ->
+                     (match Clap.Matches.getRequired __clap_matches
+                              {*j|quality|*j} percent
+                      with
+                      | Error __clap_error -> Error __clap_error
+                      | Ok __clap_field_quality ->
+                          (match Clap.Matches.getRequired __clap_matches
+                                   {*j|dryRun|*j} Clap.ValueParser.bool
+                           with
+                           | Error __clap_error -> Error __clap_error
+                           | Ok __clap_field_dryRun ->
+                               (match Clap.Matches.getOne __clap_matches
+                                        {*j|ratio|*j} Clap.ValueParser.float
+                                with
+                                | Error __clap_error -> Error __clap_error
+                                | Ok __clap_field_ratio ->
+                                    Ok
+                                      ({
+                                         level = __clap_field_level;
+                                         color = __clap_field_color;
+                                         formats = __clap_field_formats;
+                                         quality = __clap_field_quality;
+                                         dryRun = __clap_field_dryRun;
+                                         ratio = __clap_field_ratio
+                                       } : options)))))))
+let (optionsParser : options Clap.Parser.t) =
+  Clap.Parser.fromArgs (Clap.Command.make {*j|options|*j}) optionsArgs
+let run [arity:1]argv = Clap.tryParseFrom optionsParser argv

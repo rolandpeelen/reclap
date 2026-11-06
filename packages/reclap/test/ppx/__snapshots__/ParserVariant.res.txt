@@ -1,0 +1,62 @@
+type nonrec tool =
+  | Build of {
+  release: bool ;
+  jobs: int option } [@res.doc " Builds the project "]
+  | Test of {
+  filter: string option } [@res.doc " Runs the tests "]
+let (toolSubcommand : tool Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.arg
+              (Clap.Command.arg
+                 (Clap.Command.about (Clap.Command.make {*j|build|*j})
+                    {*j|Builds the project|*j})
+                 (Clap.Arg.long
+                    (Clap.Arg.action (Clap.Arg.make {*j|release|*j})
+                       Clap.Arg.SetTrue) {*j|release|*j}))
+              (Clap.Arg.long
+                 (Clap.Arg.short
+                    (Clap.Arg.valueParser
+                       (Clap.Arg.action
+                          (Clap.Arg.valueName (Clap.Arg.make {*j|jobs|*j})
+                             {*j|JOBS|*j}) Clap.Arg.Set) Clap.ValueParser.int)
+                    {*j|j|*j}) {*j|jobs|*j})) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.arg
+            (Clap.Command.about (Clap.Command.make {*j|test|*j})
+               {*j|Runs the tests|*j})
+            (Clap.Arg.valueParser
+               (Clap.Arg.action
+                  (Clap.Arg.valueName (Clap.Arg.make {*j|filter|*j})
+                     {*j|FILTER|*j}) Clap.Arg.Set) Clap.ValueParser.string)))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|build|*j}, __clap_matches) ->
+           let __clap_field_release =
+             Clap.Matches.getFlag __clap_matches {*j|release|*j} in
+           (match Clap.Matches.getOne __clap_matches {*j|jobs|*j}
+                    Clap.ValueParser.int
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_jobs ->
+                Ok
+                  (Build
+                     {
+                       release = __clap_field_release;
+                       jobs = __clap_field_jobs
+                     } : tool))
+       | Some ({*j|test|*j}, __clap_matches) ->
+           (match Clap.Matches.getOne __clap_matches {*j|filter|*j}
+                    Clap.ValueParser.string
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_filter ->
+                Ok (Test { filter = __clap_field_filter } : tool))
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+let (toolParser : tool Clap.Parser.t) =
+  Clap.Parser.fromSubcommand
+    (Clap.Command.version (Clap.Command.make {*j|tool|*j}) {*j|2.0.0|*j})
+    toolSubcommand
+let run [arity:1]argv = Clap.tryParseFrom toolParser argv

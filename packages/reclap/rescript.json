@@ -1,0 +1,12 @@
+{
+  "name": "reclap",
+  "sources": [
+    {"dir": "src", "subdirs": true},
+    {"dir": "test", "subdirs": true, "type": "dev"},
+    {"dir": "examples", "subdirs": true, "type": "dev"}
+  ],
+  "package-specs": [{"module": "esmodule", "in-source": true}],
+  "suffix": ".res.mjs",
+  "ppx-flags": ["./bin/ppx"],
+  "warnings": {"number": "+a-48-30", "error": "+a-3-44-102"}
+}

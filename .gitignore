@@ -1,0 +1,29 @@
+node_modules/
+.scratch/
+
+# ReScript
+lib/bs/
+lib/ocaml/
+packages/*/lib/
+*.res.mjs
+.bsb.lock
+
+# dune
+_build/
+packages/reclap/ppx.exe
+
+*.log
+.DS_Store
+
+# Rust reference project for clap fixtures
+reference/clap-fixtures/target/
+
+# Stray compiler artefacts from running bsc by hand
+*.cmi
+*.cmj
+*.cmt
+*.cmti
+
+# Prebuilt PPX binaries, placed by the release workflow
+packages/reclap/bin/ppx-*.exe
+packages/reclap/bin/ppx.exe

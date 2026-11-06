@@ -1,0 +1,101 @@
+type nonrec plain = {
+  value: int [@as {*j|x|*j}]}[@@res.doc
+                               " A type without @clap attributes passes through untouched. "]
+type nonrec command =
+  | Hello of {
+  loud: bool } [@res.doc " Says hello "]
+  | Bye [@res.doc " Says goodbye "]
+let (commandSubcommand : command Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.arg
+              (Clap.Command.about (Clap.Command.make {*j|hello|*j})
+                 {*j|Says hello|*j})
+              (Clap.Arg.long
+                 (Clap.Arg.action (Clap.Arg.make {*j|loud|*j})
+                    Clap.Arg.SetTrue) {*j|loud|*j})) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.about (Clap.Command.make {*j|bye|*j})
+            {*j|Says goodbye|*j}))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|hello|*j}, __clap_matches) ->
+           let __clap_field_loud =
+             Clap.Matches.getFlag __clap_matches {*j|loud|*j} in
+           Ok (Hello { loud = __clap_field_loud } : command)
+       | Some ({*j|bye|*j}, _) -> Ok (Bye : command)
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+type nonrec t =
+  {
+  name: string [@res.doc " Name of the person to greet "];
+  count: int [@res.doc " Number of times to greet "];
+  verbose: int ;
+  command: command option }[@@res.doc " Simple program to greet a person "]
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.long
+                 (Clap.Arg.short
+                    (Clap.Arg.valueParser
+                       (Clap.Arg.action
+                          (Clap.Arg.required
+                             (Clap.Arg.valueName (Clap.Arg.make {*j|name|*j})
+                                {*j|NAME|*j}) true) Clap.Arg.Set)
+                       Clap.ValueParser.string) {*j|n|*j}) {*j|name|*j})
+              {*j|Name of the person to greet|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.long
+                 (Clap.Arg.short
+                    (Clap.Arg.defaultValue
+                       (Clap.Arg.valueParser
+                          (Clap.Arg.action
+                             (Clap.Arg.valueName
+                                (Clap.Arg.make {*j|count|*j}) {*j|COUNT|*j})
+                             Clap.Arg.Set) Clap.ValueParser.int)
+                       Clap.ValueParser.int 1) {*j|c|*j}) {*j|count|*j})
+              {*j|Number of times to greet|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.short
+              (Clap.Arg.action (Clap.Arg.make {*j|verbose|*j}) Clap.Arg.Count)
+              {*j|v|*j}) in
+       Clap.Subcommand.augment commandSubcommand __clap_command)
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getRequired __clap_matches {*j|name|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_name ->
+           (match Clap.Matches.getRequired __clap_matches {*j|count|*j}
+                    Clap.ValueParser.int
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_count ->
+                let __clap_field_verbose =
+                  Clap.Matches.getCount __clap_matches {*j|verbose|*j} in
+                (match Clap.Subcommand.fromMatchesOptional commandSubcommand
+                         __clap_matches
+                 with
+                 | Error __clap_error -> Error __clap_error
+                 | Ok __clap_field_command ->
+                     Ok
+                       ({
+                          name = __clap_field_name;
+                          count = __clap_field_count;
+                          verbose = __clap_field_verbose;
+                          command = __clap_field_command
+                        } : t))))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs
+    (Clap.Command.about
+       (Clap.Command.version (Clap.Command.make {*j|greet|*j}) {*j|1.0.0|*j})
+       {*j|Simple program to greet a person|*j}) args
+let run [arity:1]argv = Clap.tryParseFrom parser argv
+let plainValue = { value = 1 }

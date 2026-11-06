@@ -1,0 +1,65 @@
+type nonrec mode =
+  | Fast 
+  | Safe 
+let (modeValueParser : mode Clap.ValueParser.t) =
+  Clap.ValueParser.enum
+    [|((Fast : mode), (Clap.PossibleValue.make {*j|fast|*j}));((Safe : 
+                                                                mode),
+                                                                (Clap.PossibleValue.make
+                                                                   {*j|safe|*j}))|]
+type nonrec options = {
+  dry: bool }
+let (optionsArgs : options Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       Clap.Command.arg __clap_command
+         (Clap.Arg.long
+            (Clap.Arg.action (Clap.Arg.make {*j|dry|*j}) Clap.Arg.SetTrue)
+            {*j|dry|*j}))
+    (fun [arity:1]__clap_matches ->
+       let __clap_field_dry = Clap.Matches.getFlag __clap_matches {*j|dry|*j} in
+       Ok ({ dry = __clap_field_dry } : options))
+type nonrec t = {
+  mode: mode ;
+  options: options }
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.valueParser
+              (Clap.Arg.action
+                 (Clap.Arg.required
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|mode|*j})
+                       {*j|MODE|*j}) true) Clap.Arg.Set) modeValueParser) in
+       Clap.Args.augment optionsArgs __clap_command)
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.getRequired __clap_matches {*j|mode|*j}
+               modeValueParser
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_mode ->
+           (match Clap.Args.fromMatches optionsArgs __clap_matches with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_options ->
+                Ok
+                  ({ mode = __clap_field_mode; options = __clap_field_options
+                   } : t)))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs (Clap.Command.make {*j|api|*j}) args
+type nonrec action =
+  | Start 
+  | Stop 
+let (actionSubcommand : action Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.make {*j|start|*j}) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.make {*j|stop|*j}))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|start|*j}, _) -> Ok (Start : action)
+       | Some ({*j|stop|*j}, _) -> Ok (Stop : action)
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)

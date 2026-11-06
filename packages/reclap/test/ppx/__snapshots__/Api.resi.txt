@@ -1,0 +1,15 @@
+type nonrec mode =
+  | Fast 
+  | Safe 
+val modeValueParser : mode Clap.ValueParser.t
+type nonrec options
+val optionsArgs : options Clap.Args.t
+type nonrec t = {
+  mode: mode ;
+  options: options }
+val args : t Clap.Args.t
+val parser : t Clap.Parser.t
+type nonrec action =
+  | Start 
+  | Stop 
+val actionSubcommand : action Clap.Subcommand.t
