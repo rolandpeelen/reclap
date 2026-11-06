@@ -18,7 +18,7 @@ type t = {
   /** Number of times to greet */
   @arg({short, long, default: 1}) count: int,
   @arg({short, action: Count}) verbose: int,
-  @command({subcommand}) command: option<command>,
+  @command(subcommand) command: option<command>,
 }
 
 let run = argv => Clap.tryParseFrom(parser, argv)
