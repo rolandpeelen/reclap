@@ -28,7 +28,9 @@ module Sub =
   struct
     type nonrec t =
       {
-      dry-run: bool ;
+      dry-run: bool
+        [@res.doc
+          "\n     * Only print what would happen.\n     *\n     * JSDoc style: the leading stars are not part of the help.\n     "];
       max-count: int option ;
       constant: constant ;
       command: command }[@@res.doc " A nested program "]
@@ -37,9 +39,13 @@ module Sub =
         (fun [arity:1]__clap_command ->
            let __clap_command =
              Clap.Command.arg __clap_command
-               (Clap.Arg.long
-                  (Clap.Arg.action (Clap.Arg.make {*j|dry-run|*j})
-                     Clap.Arg.SetTrue) {*j|dry-run|*j}) in
+               (Clap.Arg.longHelp
+                  (Clap.Arg.help
+                     (Clap.Arg.long
+                        (Clap.Arg.action (Clap.Arg.make {*j|dry-run|*j})
+                           Clap.Arg.SetTrue) {*j|dry-run|*j})
+                     {*j|Only print what would happen|*j})
+                  {*j|Only print what would happen.\n\nJSDoc style: the leading stars are not part of the help.|*j}) in
            let __clap_command =
              Clap.Command.arg __clap_command
                (Clap.Arg.long

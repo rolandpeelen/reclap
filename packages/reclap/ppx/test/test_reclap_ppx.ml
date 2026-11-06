@@ -40,6 +40,10 @@ let doc_comment () =
       "\n  Leading and trailing blank lines \n\n";
       "   ";
       "";
+      "\n   * JSDoc summary.\n   *\n   * JSDoc second\n   * paragraph.\n   ";
+      "* Starred first line\n * and a starred second. ";
+      " A list:\n  * first item\n  plain line ";
+      " One line with a * inside ";
     ]
 
 let naming () =

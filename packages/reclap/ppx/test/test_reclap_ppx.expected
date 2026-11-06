@@ -32,6 +32,18 @@ of_string "Kebab": true
   long    None
 "   " -> None
 "" -> None
+"\n   * JSDoc summary.\n   *\n   * JSDoc second\n   * paragraph.\n   " ->
+  summary "JSDoc summary"
+  long    "JSDoc summary.\n\nJSDoc second paragraph."
+"* Starred first line\n * and a starred second. " ->
+  summary "Starred first line and a starred second"
+  long    None
+" A list:\n  * first item\n  plain line " ->
+  summary "A list: * first item plain line"
+  long    None
+" One line with a * inside " ->
+  summary "One line with a * inside"
+  long    None
 
 ## Naming
 Args t -> args

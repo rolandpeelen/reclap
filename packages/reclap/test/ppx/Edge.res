@@ -1,5 +1,6 @@
 // Edge cases: values that never read the matches, escaped field names,
-// a parser in a nested module, and a value enum whose values are all skipped.
+// a parser in a nested module, a JSDoc style doc comment, and a value enum whose values
+// are all skipped.
 
 @clap.args
 type constant = {@arg({skip: "fixed"}) value: string}
@@ -13,7 +14,13 @@ module Sub = {
   /** A nested program */
   @clap.parser
   type t = {
-    @arg(long) \"dry-run": bool,
+    /**
+     * Only print what would happen.
+     *
+     * JSDoc style: the leading stars are not part of the help.
+     */
+    @arg(long)
+    \"dry-run": bool,
     @arg({long, short: "N"}) \"max-count": option<int>,
     @command(flatten) constant: constant,
     @command(subcommand) command: command,
