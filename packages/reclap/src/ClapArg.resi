@@ -80,3 +80,13 @@ let takesValue: t => bool
 
 /** Renders the argument as clap does in errors: `--name <NAME>`, `-n <NAME>`, `<NAME>` or `--verbose`. */
 let display: t => string
+
+/** Returns the value placeholder without brackets: the value name, or the id as clap does. */
+let placeholder: t => string
+
+/** Renders a positional argument as `<NAME>` when `required` holds and `[NAME]` otherwise,
+followed by `...` for `Append`, as clap does in usage lines. */
+let displayPositional: (t, ~required: bool) => string
+
+/** Renders the name of a named argument, preferring the long name: `--name` or `-n`. */
+let displayName: t => string
