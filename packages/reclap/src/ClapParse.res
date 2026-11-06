@@ -11,15 +11,24 @@ type level = {
 }
 
 /** What the parser has seen so far at one level. `used` lists the ids of the arguments given
-on the command line, in the order they were first seen. */
+on the command line, in the order they were first seen. `isCollectingPositional` is set while
+the last token was a value of an `Append` positional, clap's `ParseState::Pos`: a subcommand
+name is then another value. */
 type state = {
   entries: Dict.t<ClapMatches.entry>,
   used: array<string>,
   positionalIndex: int,
   isTrailing: bool,
+  isCollectingPositional: bool,
 }
 
-let initialState = {entries: Dict.make(), used: [], positionalIndex: 0, isTrailing: false}
+let initialState = {
+  entries: Dict.make(),
+  used: [],
+  positionalIndex: 0,
+  isTrailing: false,
+  isCollectingPositional: false,
+}
 
 let makeLevel = (command, ~path, ~binName, ~env) => {
   command: ClapCommand.build(command),
@@ -49,6 +58,13 @@ let renderHelp = (level, mode) =>
 let hasPositionals = level => ClapCommandDefinition.positionals(level.command)->Array.length > 0
 
 let addUnique = (items, item) => items->Array.includes(item) ? items : Array.concat(items, [item])
+
+let findArg = (level, id) => level.command.args->Array.find((arg: ClapArg.t) => arg.id == id)
+
+/** Keeps the ids of arguments that are not hidden; clap leaves hidden arguments out of the
+usage it builds from the arguments used so far. */
+let visibleIds = (level, ids) =>
+  ids->Array.filter(id => findArg(level, id)->Option.mapOr(false, arg => !arg.hidden))
 
 let withEntry = (entries, id, entry: ClapMatches.entry) => {
   let copy = entries->Dict.copy
@@ -139,7 +155,11 @@ let isKnownOptionToken = (level, token) =>
   | token if token->String.startsWith("--") =>
     let (name, _) = splitLong(token)
     ClapCommandDefinition.findLong(level.command, name)->Option.isSome
-  | token => ClapCommandDefinition.findShort(level.command, token->String.charAt(1))->Option.isSome
+  | token =>
+    ClapText.codePoints(token)
+    ->Array.get(1)
+    ->Option.flatMap(short => ClapCommandDefinition.findShort(level.command, short))
+    ->Option.isSome
   }
 
 let missingValue = (level, arg) => Error(
@@ -198,7 +218,10 @@ let unknownLong = (level, state, name, remaining) => {
       ClapError.UnknownArgument({
         context: usageContext(
           level,
-          ~used=Array.concat(state.used, suggestedIds)->Array.reduce([], addUnique),
+          ~used=visibleIds(
+            level,
+            Array.concat(state.used, suggestedIds)->Array.reduce([], addUnique),
+          ),
         ),
         argument,
         suggestion: Some("--" ++ candidate),
@@ -213,7 +236,7 @@ let unknownLong = (level, state, name, remaining) => {
     }
     Error(
       ClapError.UnknownArgument({
-        context: usageContext(level, ~used=state.used),
+        context: usageContext(level, ~used=visibleIds(level, state.used)),
         argument,
         suggestion: None,
         tips,
@@ -243,6 +266,20 @@ let displayHelpOrVersion = (level, arg: ClapArg.t, ~mode) =>
     ClapError.DisplayHelp({output: renderHelp(level, mode)})
   }
 
+/** Reports `--flag=value` for an argument that takes no value. The usage lists the visible,
+optional arguments used so far and `arg`, as clap's `parse_long_arg` does. */
+let unexpectedValue = (level, state, arg: ClapArg.t, value) => {
+  let used =
+    state.used->Array.filter(id =>
+      findArg(level, id)->Option.mapOr(false, used => !used.hidden && !used.required)
+    )
+  ClapError.UnexpectedValue({
+    context: usageContext(level, ~used=addUnique(used, arg.id)),
+    argument: ClapArg.display(arg),
+    value,
+  })
+}
+
 /** Parses `--name`, `--name=value` or `--name value` at `index`. Returns the new state and the
 index of the next unread token. */
 let parseLong = (level, state, tokens, index, token) => {
@@ -251,36 +288,31 @@ let parseLong = (level, state, tokens, index, token) => {
   | None => unknownLong(level, state, name, tokens->Array.slice(~start=index + 1))
   | Some(arg) =>
     switch (arg.action, attachedValue) {
-    | (Help | Version, _) => Error(displayHelpOrVersion(level, arg, ~mode=Long))
     | (Set | Append, Some(value)) =>
       recordValue(level, state, arg, value)->Result.map(state => (state, index + 1))
     | (Set | Append, None) => takeSeparateValue(level, state, arg, tokens, index + 1)
-    | (SetTrue | SetFalse | Count, Some(value)) =>
-      Error(
-        ClapError.UnexpectedValue({
-          context: usageContext(level, ~used=addUnique(state.used, arg.id)),
-          argument: ClapArg.display(arg),
-          value,
-        }),
-      )
+    | (SetTrue | SetFalse | Count | Help | Version, Some(value)) =>
+      Error(unexpectedValue(level, state, arg, value))
+    | (Help | Version, None) => Error(displayHelpOrVersion(level, arg, ~mode=Long))
     | (SetTrue | SetFalse | Count, None) =>
       recordOccurrence(level, state, arg, "")->Result.map(state => (state, index + 1))
     }
   }
 }
 
-/** Parses a cluster of short flags such as `-vvv`, `-vn Ann` or `-nAnn` at `index`, starting
-at character `position`. The first option that takes a value consumes the rest of the
-cluster, minus one leading `=`. Returns the new state and the index of the next unread token. */
-let rec parseShortCluster = (level, state, tokens, index, token, position) =>
-  switch position >= String.length(token) {
-  | true => Ok((state, index + 1))
-  | false =>
-    let short = token->String.charAt(position)
+/** Parses a cluster of short flags such as `-vvv`, `-vn Ann` or `-nAnn` at `index`. `shorts`
+holds the code points of the cluster that are still to parse. The first option that takes a
+value consumes the rest of the cluster, minus one leading `=`. Returns the new state and the
+index of the next unread token. */
+let rec parseShortCluster = (level, state, tokens, index, shorts) =>
+  switch shorts->Array.get(0) {
+  | None => Ok((state, index + 1))
+  | Some(short) =>
+    let remaining = shorts->Array.slice(~start=1)
     switch ClapCommandDefinition.findShort(level.command, short) {
     | None => unknownShort(level, short)
     | Some(arg) =>
-      let rest = token->String.slice(~start=position + 1)
+      let rest = remaining->Array.join("")
       switch (arg.action, rest) {
       | (Help | Version, _) => Error(displayHelpOrVersion(level, arg, ~mode=Short))
       | (Set | Append, "") => takeSeparateValue(level, state, arg, tokens, index + 1)
@@ -289,7 +321,7 @@ let rec parseShortCluster = (level, state, tokens, index, token, position) =>
         recordValue(level, state, arg, value)->Result.map(state => (state, index + 1))
       | (SetTrue | SetFalse | Count, _) =>
         switch recordOccurrence(level, state, arg, "") {
-        | Ok(state) => parseShortCluster(level, state, tokens, index, token, position + 1)
+        | Ok(state) => parseShortCluster(level, state, tokens, index, remaining)
         | Error(error) => Error(error)
         }
       }
@@ -298,27 +330,43 @@ let rec parseShortCluster = (level, state, tokens, index, token, position) =>
 
 let quoteAll = names => names->Array.map(name => `'${name}'`)->Array.join(", ")
 
-let invalidSubcommand = (level, name) => {
+let unknownArgument = (level, argument, ~tips) => Error(
+  ClapError.UnknownArgument({context: helpContext(level), argument, suggestion: None, tips}),
+)
+
+/** Reports a word that is neither a free positional slot nor a subcommand, as clap's
+`match_arg_error` does: a subcommand name after `--` gets a tip; otherwise a word similar to a
+subcommand name, or any word when the command takes no positionals, is an unrecognized
+subcommand, and the rest are unknown arguments. */
+let unmatchedWord = (level, state, word) => {
+  let invalidSubcommand = (~suggestion, ~tips) => Error(
+    ClapError.InvalidSubcommand({context: helpContext(level), name: word, suggestion, tips}),
+  )
   let candidates =
     level.command.subcommands->Array.flatMap(subcommand =>
       Array.concatMany([subcommand.name], [subcommand.aliases, subcommand.visibleAliases])
     )
-  let (suggestion, similarTips) = switch ClapSuggest.didYouMean(name, candidates) {
-  | [] => (None, [])
-  | [candidate] => (Some(candidate), [])
-  | candidates => (None, [`some similar subcommands exist: ${quoteAll(candidates)}`])
+  switch (
+    state.isTrailing && ClapCommandDefinition.findSubcommand(level.command, word)->Option.isSome,
+    candidates,
+    ClapSuggest.didYouMean(word, candidates),
+  ) {
+  | (true, _, _) =>
+    unknownArgument(
+      level,
+      word,
+      ~tips=[`subcommand '${word}' exists; to use it, remove the '--' before it`],
+    )
+  | (false, [], _) => unknownArgument(level, word, ~tips=[])
+  | (false, _, [candidate]) => invalidSubcommand(~suggestion=Some(candidate), ~tips=[])
+  | (false, _, []) if !hasPositionals(level) => invalidSubcommand(~suggestion=None, ~tips=[])
+  | (false, _, []) => unknownArgument(level, word, ~tips=[])
+  | (false, _, similar) =>
+    invalidSubcommand(
+      ~suggestion=None,
+      ~tips=[`some similar subcommands exist: ${quoteAll(similar)}`],
+    )
   }
-  let valueTips = hasPositionals(level)
-    ? [`to pass '${name}' as a value, use '${level.binName} -- ${name}'`]
-    : []
-  Error(
-    ClapError.InvalidSubcommand({
-      context: helpContext(level),
-      name,
-      suggestion,
-      tips: Array.concat(similarTips, valueTips),
-    }),
-  )
 }
 
 /** Records a positional value in the next free positional slot. A trailing `Append`
@@ -326,31 +374,16 @@ positional keeps its slot and collects the rest. */
 let parsePositional = (level, state, token) =>
   switch ClapCommandDefinition.positionals(level.command)->Array.get(state.positionalIndex) {
   | Some(arg) =>
-    recordValue(level, state, arg, token)->Result.map(state => {
-      ...state,
-      positionalIndex: switch arg.action {
-      | Append => state.positionalIndex
-      | Set | SetTrue | SetFalse | Count | Help | Version => state.positionalIndex + 1
-      },
-    })
-  | None if !state.isTrailing && level.command.subcommands->Array.length > 0 =>
-    invalidSubcommand(level, token)
-  | None =>
-    let tips = switch (
-      state.isTrailing,
-      ClapCommandDefinition.findSubcommand(level.command, token),
-    ) {
-    | (true, Some(_)) => [`subcommand '${token}' exists; to use it, remove the '--' before it`]
-    | (true, None) | (false, _) => []
-    }
-    Error(
-      ClapError.UnknownArgument({
-        context: helpContext(level),
-        argument: token,
-        suggestion: None,
-        tips,
-      }),
+    recordValue(level, state, arg, token)->Result.map(state =>
+      switch arg.action {
+      | Append => {...state, isCollectingPositional: true}
+      | Set | SetTrue | SetFalse | Count | Help | Version => {
+          ...state,
+          positionalIndex: state.positionalIndex + 1,
+        }
+      }
     )
+  | None => unmatchedWord(level, state, token)
   }
 
 /** Returns the usage name of a subcommand: the parent's usage name, the parent's required
@@ -381,10 +414,9 @@ let enterSubcommand = (level, subcommand: ClapCommand.t) =>
 
 **Errors**: `DisplayHelp` on success, `InvalidSubcommand` for an unknown name. */
 let rec displayHelpFor = (level, names) =>
-  switch names {
-  | [] => Error(ClapError.DisplayHelp({output: renderHelp(level, Long)}))
-  | names =>
-    let name = names->Array.getUnsafe(0)
+  switch names->Array.get(0) {
+  | None => Error(ClapError.DisplayHelp({output: renderHelp(level, Long)}))
+  | Some(name) =>
     switch ClapCommandDefinition.findSubcommand(level.command, name) {
     | None =>
       Error(
@@ -400,42 +432,48 @@ let rec displayHelpFor = (level, names) =>
     }
   }
 
-let isBoolishTrue = value =>
-  switch value->String.toLowerCase {
-  | "y" | "yes" | "t" | "true" | "on" | "1" => true
-  | _ => false
+let boolPossibleValues = [ClapPossibleValue.make("true"), ClapPossibleValue.make("false")]
+
+/** Validates a `Count` value from the environment as clap's `u8` value parser does. */
+let validateCount = input =>
+  switch ClapValueParser.parse(ClapValueParser.int, input) {
+  | Ok(count) if count >= 0 && count <= 255 => Ok()
+  | Ok(count) => Error(`${Int.toString(count)} is not in 0..=255`)
+  | Error(reason) => Error(reason)
   }
 
-/** Fills an absent argument from its environment variable, then from its default values. */
+/** Validates an environment value with the value parser clap uses for the argument's action:
+the argument's own for `Set` and `Append`, `true`/`false` for flags and `u8` for counters. */
+let validateEnvValue = (level, arg: ClapArg.t, value) =>
+  switch (arg.action, value) {
+  | (SetTrue | SetFalse, "") => missingValue(level, {...arg, possibleValues: boolPossibleValues})
+  | (SetTrue | SetFalse, value) =>
+    validateValue(level, {...arg, possibleValues: boolPossibleValues}, value)
+  | (Count, value) => validateValue(level, {...arg, validate: validateCount}, value)
+  | (Set | Append | Help | Version, value) => validateValue(level, arg, value)
+  }
+
+/** Fills an absent argument from its environment variable, then from its default values.
+Absent flags and counters default to `false` (`true` for `SetFalse`) and `0`, as in clap. */
 let fallbackEntry = (level, arg: ClapArg.t): result<option<ClapMatches.entry>, ClapError.t> => {
   let envValue = arg.env->Option.flatMap(name => level.env->Dict.get(name))
-  switch (arg.action, envValue, arg.defaultValues) {
-  | (Set | Append, Some(value), _) =>
-    validateValue(level, arg, value)->Result.map(() => Some({
+  let defaulted = values => Ok(Some({ClapMatches.values, occurrences: 0, source: DefaultValue}))
+  switch (arg.action, envValue) {
+  | (Help | Version, _) => Ok(None)
+  | (Set | Append | SetTrue | SetFalse | Count, Some(value)) =>
+    validateEnvValue(level, arg, value)->Result.map(() => Some({
       ClapMatches.values: [value],
       occurrences: 0,
       source: EnvVariable,
     }))
-  | (SetTrue, Some(value), _) =>
-    Ok(
-      Some({
-        values: [isBoolishTrue(value) ? "true" : "false"],
-        occurrences: 0,
-        source: EnvVariable,
-      }),
-    )
-  | (SetFalse, Some(value), _) =>
-    Ok(
-      Some({
-        values: [isBoolishTrue(value) ? "false" : "true"],
-        occurrences: 0,
-        source: EnvVariable,
-      }),
-    )
-  | (Set | Append, None, []) => Ok(None)
-  | (Set | Append, None, defaults) =>
-    Ok(Some({values: defaults, occurrences: 0, source: DefaultValue}))
-  | (SetTrue | SetFalse | Count | Help | Version, _, _) => Ok(None)
+  | (Set | Append, None) =>
+    switch arg.defaultValues {
+    | [] => Ok(None)
+    | defaults => defaulted(defaults)
+    }
+  | (SetTrue, None) => defaulted(["false"])
+  | (SetFalse, None) => defaulted(["true"])
+  | (Count, None) => defaulted(["0"])
   }
 }
 
@@ -454,6 +492,21 @@ let applyFallbacks = (level, state) =>
     }
   )
 
+/** Returns the ids of the arguments given on the command line, then of those read from the
+environment, in clap's matcher order. Defaulted arguments are not explicit. */
+let explicitIds = (level, state, entries) =>
+  Array.concat(
+    state.used,
+    level.command.args
+    ->Array.filter(arg =>
+      switch entries->Dict.get(arg.id) {
+      | Some({ClapMatches.source: EnvVariable, _}) => true
+      | Some({source: CommandLine | DefaultValue, _}) | None => false
+      }
+    )
+    ->Array.map(arg => arg.id),
+  )
+
 let checkRequired = (level, state, entries) => {
   let missing =
     level.command.args->Array.filter(arg =>
@@ -470,10 +523,10 @@ let checkRequired = (level, state, entries) => {
       ClapError.MissingRequiredArguments({
         context: usageContext(
           level,
-          ~used=Array.concat(state.used, ordered->Array.map(arg => arg.id))->Array.reduce(
-            [],
-            addUnique,
-          ),
+          ~used=Array.concat(
+            visibleIds(level, explicitIds(level, state, entries)),
+            ordered->Array.map(arg => arg.id),
+          )->Array.reduce([], addUnique),
         ),
         arguments: ordered->Array.map(arg => ClapArg.display({...arg, required: true})),
       }),
@@ -481,23 +534,26 @@ let checkRequired = (level, state, entries) => {
   }
 }
 
-/** Validates one finished level and builds its matches, as clap's `Validator` does. */
+/** Validates one finished level and builds its matches, as clap's `add_env`, `add_defaults`
+and `Validator` do, in that order. */
 let finish = (level, state, subcommand) =>
-  switch subcommand {
-  | None if level.command.argRequiredElseHelp && state.used->Array.length == 0 =>
-    Error(ClapError.DisplayHelpOnMissingArgumentOrSubcommand({output: renderHelp(level, Short)}))
-  | None if level.command.subcommandRequired =>
-    Error(
-      ClapError.MissingSubcommand({
-        context: helpContext(level),
-        name: level.path->Array.join(" "),
-        subcommands: ClapCommandDefinition.allSubcommandNames(level.command),
-      }),
-    )
-  | None | Some(_) =>
-    switch applyFallbacks(level, state) {
-    | Error(error) => Error(error)
-    | Ok(entries) =>
+  switch applyFallbacks(level, state) {
+  | Error(error) => Error(error)
+  | Ok(entries) =>
+    switch subcommand {
+    | None
+      if level.command.argRequiredElseHelp &&
+      explicitIds(level, state, entries)->Array.length == 0 =>
+      Error(ClapError.DisplayHelpOnMissingArgumentOrSubcommand({output: renderHelp(level, Short)}))
+    | None if level.command.subcommandRequired =>
+      Error(
+        ClapError.MissingSubcommand({
+          context: helpContext(level),
+          name: level.path->Array.join(" "),
+          subcommands: ClapCommandDefinition.allSubcommandNames(level.command),
+        }),
+      )
+    | None | Some(_) =>
       checkRequired(level, state, entries)->Result.map((): ClapMatches.t => {
         command: level.command,
         context: helpContext(level),
@@ -515,9 +571,21 @@ let rec parseLevel = (level, state, tokens, index) =>
     continueWith(level, parsePositional(level, state, token), tokens, index + 1)
   | Some("--") => parseLevel(level, {...state, isTrailing: true}, tokens, index + 1)
   | Some(token) if token->String.startsWith("--") =>
-    continueAt(level, parseLong(level, state, tokens, index, token), tokens)
+    continueAfterOption(level, parseLong(level, state, tokens, index, token), tokens)
   | Some(token) if isOptionLike(token) =>
-    continueAt(level, parseShortCluster(level, state, tokens, index, token, 1), tokens)
+    continueAfterOption(
+      level,
+      parseShortCluster(
+        level,
+        state,
+        tokens,
+        index,
+        ClapText.codePoints(token)->Array.slice(~start=1),
+      ),
+      tokens,
+    )
+  | Some(token) if state.isCollectingPositional =>
+    continueWith(level, parsePositional(level, state, token), tokens, index + 1)
   | Some(token) =>
     switch ClapCommandDefinition.findSubcommand(level.command, token) {
     | Some(subcommand) if ClapCommandDefinition.isHelpSubcommand(subcommand) =>
@@ -537,9 +605,10 @@ and continueWith = (level, parsed, tokens, nextIndex) =>
   | Ok(state) => parseLevel(level, state, tokens, nextIndex)
   | Error(error) => Error(error)
   }
-and continueAt = (level, parsed, tokens) =>
+and continueAfterOption = (level, parsed, tokens) =>
   switch parsed {
-  | Ok((state, nextIndex)) => parseLevel(level, state, tokens, nextIndex)
+  | Ok((state, nextIndex)) =>
+    parseLevel(level, {...state, isCollectingPositional: false}, tokens, nextIndex)
   | Error(error) => Error(error)
   }
 

@@ -24,6 +24,19 @@ describe("value parsers", () => {
     )
     expect(Clap.ValueParser.format(Clap.ValueParser.float, 1.))->toBe("1")
   })
+  test("float accepts Rust's infinity and NaN spellings", () => {
+    let parse = input => Clap.ValueParser.parse(Clap.ValueParser.float, input)
+    expect(parse("inf"))->toEqual(Ok(Float.Constants.positiveInfinity))
+    expect(parse("+Infinity"))->toEqual(Ok(Float.Constants.positiveInfinity))
+    expect(parse("-inf"))->toEqual(Ok(Float.Constants.negativeInfinity))
+    expect(parse("-INFINITY"))->toEqual(Ok(Float.Constants.negativeInfinity))
+    expect(parse("NaN")->Result.mapOr(false, Float.isNaN))->toBe(true)
+    expect(parse("infinit"))->toEqual(Error("invalid float literal"))
+    let format = value => Clap.ValueParser.format(Clap.ValueParser.float, value)
+    expect(format(Float.Constants.positiveInfinity))->toBe("inf")
+    expect(format(Float.Constants.negativeInfinity))->toBe("-inf")
+    expect(format(Float.Constants.nan))->toBe("NaN")
+  })
   test("bool lists its possible values", () => {
     expect(Clap.ValueParser.parse(Clap.ValueParser.bool, "true"))->toEqual(Ok(true))
     expect(Clap.ValueParser.bool.possibleValues->Array.map(value => value.name))->toEqual([

@@ -49,14 +49,17 @@ let getManyOptional: (
 
 /** Returns the unparsed values of the argument as stored, or `None` when it has no entry.
 
-Mirrors `ArgMatches::get_raw`. Flags store `"true"`/`"false"` and counters the count. */
+Mirrors `ArgMatches::get_raw`. Flags store `"true"`/`"false"` and counters the count; absent
+flags and counters have a `DefaultValue` entry of `"false"` (`"true"` for `SetFalse`) or `"0"`,
+and values read from the environment are stored as given. */
 let getRaw: (t, string) => option<array<string>>
 
 /** Returns the ids of every argument with an entry, defaulted ones included, sorted. Mirrors
 `ArgMatches::ids`, which lists them in insertion order instead. */
 let ids: t => array<string>
 
-/** Returns whether the argument has a value from any source. */
+/** Returns whether the argument has a value from any source. As in clap, this holds for every
+flag and counter, which default to `false` and `0`. */
 let contains: (t, string) => bool
 
 /** Returns where the argument's value came from. */
