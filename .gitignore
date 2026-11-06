@@ -17,3 +17,9 @@ packages/reclap/ppx.exe
 
 # Rust reference project for clap fixtures
 reference/clap-fixtures/target/
+
+# Stray compiler artefacts from running bsc by hand
+*.cmi
+*.cmj
+*.cmt
+*.cmti
