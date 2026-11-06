@@ -9,9 +9,30 @@ module Doc_comment = Doc_comment
 module Naming = Naming
 open Parsetree0
 
+(* Walks the items in source order, so each type declaration sees the types
+   declared before it and those of its own group. *)
 let rec map_structure ~module_name ~enums items =
-  let enums = Enum_scope.enter enums items in
-  List.concat_map (map_structure_item ~module_name ~enums) items
+  let _, mapped =
+    List.fold_left
+      (fun (enums, mapped) (item : structure_item) ->
+        (* The scope of the item, and the scope after it. *)
+        let enums, after =
+          match item.pstr_desc with
+          | Pstr_type (_, declarations) ->
+              let enums = Enum_scope.add_types enums declarations in
+              (enums, enums)
+          | Pstr_module binding -> (enums, Enum_scope.add_module enums binding)
+          | Pstr_recmodule bindings ->
+              (enums, List.fold_left Enum_scope.add_module enums bindings)
+          | Pstr_eval _ | Pstr_value _ | Pstr_primitive _ | Pstr_typext _ | Pstr_exception _
+          | Pstr_modtype _ | Pstr_open _ | Pstr_class _ | Pstr_class_type _ | Pstr_include _
+          | Pstr_attribute _ | Pstr_extension _ ->
+              (enums, enums)
+        in
+        (after, List.rev_append (map_structure_item ~module_name ~enums item) mapped))
+      (enums, []) items
+  in
+  List.rev mapped
 
 and map_structure_item ~module_name ~enums (item : structure_item) =
   match item.pstr_desc with

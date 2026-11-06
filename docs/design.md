@@ -134,8 +134,12 @@ the field name.
 A skipped value has no name, so it cannot be a `default`: help could not show
 it and the parser could not read it back. A `default` that names a skipped
 constructor is a compile error when the value enum is declared in the same
-file. The PPX sees one file at a time and no types, so it cannot check a value
-enum from another file.
+file. The PPX sees one file at a time and no types, so it resolves the field's
+type by name the way the compiler would within that file: types declared
+earlier or in the same group, enclosing structures, and earlier nested modules
+as `Module.type`, with an inner type shadowing an outer one of the same name.
+It cannot check a value enum from another file or one reached through `open`
+or `include`.
 
 `renameAll` accepts clap's values: `"kebab-case"` (default), `"snake_case"`,
 `"camelCase"`, `"PascalCase"`, `"SCREAMING_SNAKE_CASE"`, `"lower"`,
@@ -171,7 +175,10 @@ The value parser for an element type `T` is:
 - `string`, `int`, `float`, `bool`: `Clap.ValueParser.string` and so on. The
   standard library spellings `String.t`, `Int.t`, `Float.t` and `Bool.t` (also
   with a `Stdlib.` prefix) are the same types and get the same parsers; a
-  `Bool.t` field is a flag and an `Int.t` field can count.
+  `Bool.t` field is a flag and an `Int.t` field can count. The PPX goes by the
+  name, so a module of your own named `Int`, `String`, `Float` or `Bool` with
+  a type `t` is taken for the standard one. `Option.t` and `Array.t` are not
+  recognised: write `option<T>` and `array<T>`.
 - Any other type: the value that `@clap.valueEnum` generates for it, by the
   naming rule below. Users can write that value by hand for custom types, which
   is how clap's `value_parser = ...` is spelled.

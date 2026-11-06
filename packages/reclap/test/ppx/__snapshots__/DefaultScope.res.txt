@@ -1,0 +1,77 @@
+type nonrec mode =
+  | Fast 
+  | Slow 
+let (modeValueParser : mode Clap.ValueParser.t) =
+  Clap.ValueParser.enum
+    [|((Fast : mode), (Clap.PossibleValue.make {*j|fast|*j}))|]
+module Inner =
+  struct
+    type nonrec mode =
+      | Fast 
+      | Slow 
+    let modeValueParser =
+      Clap.ValueParser.make
+        (fun [arity:1]input ->
+           (match input with
+            | {*j|fast|*j} -> Ok Fast
+            | {*j|slow|*j} -> Ok Slow
+            | _ -> Error {*j|invalid value|*j} : (mode, string) result))
+        (fun [arity:1](mode : mode) ->
+           match mode with | Fast -> {*j|fast|*j} | Slow -> {*j|slow|*j})
+    type nonrec t = {
+      mode: mode }
+    let (args : t Clap.Args.t) =
+      Clap.Args.make
+        (fun [arity:1]__clap_command ->
+           Clap.Command.arg __clap_command
+             (Clap.Arg.long
+                (Clap.Arg.defaultValue
+                   (Clap.Arg.valueParser
+                      (Clap.Arg.action
+                         (Clap.Arg.valueName (Clap.Arg.make {*j|mode|*j})
+                            {*j|MODE|*j}) Clap.Arg.Set) modeValueParser)
+                   modeValueParser Slow) {*j|mode|*j}))
+        (fun [arity:1]__clap_matches ->
+           match Clap.Matches.getRequired __clap_matches {*j|mode|*j}
+                   modeValueParser
+           with
+           | Error __clap_error -> Error __clap_error
+           | Ok __clap_field_mode -> Ok ({ mode = __clap_field_mode } : t))
+  end
+type nonrec speed =
+  | Quick 
+  | Steady 
+let (speedValueParser : speed Clap.ValueParser.t) =
+  Clap.ValueParser.enum
+    [|((Quick : speed), (Clap.PossibleValue.make {*j|quick|*j}));((Steady : 
+                                                                   speed),
+                                                                   (Clap.PossibleValue.make
+                                                                    {*j|steady|*j}))|]
+module Later =
+  struct
+    type nonrec t = {
+      speed: speed }
+    let (args : t Clap.Args.t) =
+      Clap.Args.make
+        (fun [arity:1]__clap_command ->
+           Clap.Command.arg __clap_command
+             (Clap.Arg.long
+                (Clap.Arg.defaultValue
+                   (Clap.Arg.valueParser
+                      (Clap.Arg.action
+                         (Clap.Arg.valueName (Clap.Arg.make {*j|speed|*j})
+                            {*j|SPEED|*j}) Clap.Arg.Set) speedValueParser)
+                   speedValueParser Steady) {*j|speed|*j}))
+        (fun [arity:1]__clap_matches ->
+           match Clap.Matches.getRequired __clap_matches {*j|speed|*j}
+                   speedValueParser
+           with
+           | Error __clap_error -> Error __clap_error
+           | Ok __clap_field_speed -> Ok ({ speed = __clap_field_speed } : t))
+    type nonrec speed =
+      | Quick 
+      | Steady 
+    let (speedValueParser : speed Clap.ValueParser.t) =
+      Clap.ValueParser.enum
+        [|((Quick : speed), (Clap.PossibleValue.make {*j|quick|*j}))|]
+  end
