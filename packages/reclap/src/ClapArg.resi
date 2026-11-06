@@ -5,19 +5,27 @@ An argument without `short` and `long` is positional. */
 
 /** What happens when the argument occurs. Mirrors `clap::ArgAction`. */
 type action =
-  | /** Stores one value. A second occurrence is an error. */ Set
-  | /** Appends every value of every occurrence. */ Append
-  | /** A flag that reads as `true` when present. */ SetTrue
-  | /** A flag that reads as `false` when present. */ SetFalse
-  | /** Counts the occurrences, as in `-vvv`. */ Count
-  | /** Prints help and stops. */ Help
-  | /** Prints the version and stops. */ Version
+  /** Stores one value. A second occurrence is an error. */
+  | Set
+  /** Appends every value of every occurrence. */
+  | Append
+  /** A flag that reads as `true` when present. */
+  | SetTrue
+  /** A flag that reads as `false` when present. */
+  | SetFalse
+  /** Counts the occurrences, as in `-vvv`. */
+  | Count
+  /** Prints help and stops. */
+  | Help
+  /** Prints the version and stops. */
+  | Version
 
 type t = {
   id: string,
   short: option<string>,
   long: option<string>,
   aliases: array<string>,
+  visibleAliases: array<string>,
   help: option<string>,
   longHelp: option<string>,
   valueName: option<string>,
@@ -41,6 +49,9 @@ let long: (t, string) => t
 
 /** Adds a hidden alternative long name. */
 let alias: (t, string) => t
+
+/** Adds an alternative long name that help shows as `[aliases: --x]`. */
+let visibleAlias: (t, string) => t
 
 /** Sets the help shown by `-h`. */
 let help: (t, string) => t
@@ -80,3 +91,13 @@ let takesValue: t => bool
 
 /** Renders the argument as clap does in errors: `--name <NAME>`, `-n <NAME>`, `<NAME>` or `--verbose`. */
 let display: t => string
+
+/** Returns the value placeholder without brackets: the value name, or the id as clap does. */
+let placeholder: t => string
+
+/** Renders a positional argument as `<NAME>` when `required` holds and `[NAME]` otherwise,
+followed by `...` for `Append`, as clap does in usage lines. */
+let displayPositional: (t, ~required: bool) => string
+
+/** Renders the name of a named argument, preferring the long name: `--name` or `-n`. */
+let displayName: t => string

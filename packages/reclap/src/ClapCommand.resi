@@ -4,9 +4,12 @@ Mirrors `clap::Command`. Every function returns a new definition. The parser add
 `-h, --help`, `-V, --version` (when a version is set) and a `help` subcommand (when
 there are subcommands) unless arguments or subcommands with those names exist. */
 
-type rec t = {
+/** The fields are public; the equation with the internal `ClapCommandDefinition.t` lets the
+parser and the help renderer share the type without a module cycle. */
+type rec t = ClapCommandDefinition.t = {
   name: string,
   aliases: array<string>,
+  visibleAliases: array<string>,
   version: option<string>,
   about: option<string>,
   longAbout: option<string>,
@@ -36,6 +39,9 @@ let author: (t, string) => t
 /** Adds a hidden alternative name for a subcommand. */
 let alias: (t, string) => t
 
+/** Adds an alternative name for a subcommand that help shows as `[alias: x]`. */
+let visibleAlias: (t, string) => t
+
 /** Appends an argument. */
 let arg: (t, ClapArg.t) => t
 
@@ -50,6 +56,11 @@ let argRequiredElseHelp: (t, bool) => t
 
 /** Hides a subcommand from its parent's help. */
 let hide: t => t
+
+/** Adds `-h, --help`, `-V, --version` (when a version is set) and the `help` subcommand (when
+there are subcommands) unless the command defines them already. Mirrors `Command::build` for
+one level; it is idempotent, and the parser applies it to each command it enters. */
+let build: t => t
 
 /** Renders the help that `-h` prints. */
 let renderHelp: t => string
