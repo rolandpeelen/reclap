@@ -1,0 +1,11 @@
+{
+  "name": "reclap-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces",
+    "format": "npm run format --workspaces"
+  }
+}

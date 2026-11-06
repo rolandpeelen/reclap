@@ -1,0 +1,11 @@
+; Only the PPX is an OCaml project. Keep dune away from node_modules and the
+; ReScript sources.
+(dirs ppx)
+
+; Copy the PPX binary to the package root so consumers can reference it as
+; "reclap/ppx.exe" in their rescript.json "ppx-flags".
+(rule
+ (mode
+  (promote (until-clean)))
+ (action
+  (copy ppx/bin/reclap_ppx.exe ppx.exe)))

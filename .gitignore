@@ -1,0 +1,16 @@
+node_modules/
+.scratch/
+
+# ReScript
+lib/bs/
+lib/ocaml/
+packages/*/lib/
+*.res.mjs
+.bsb.lock
+
+# dune
+_build/
+packages/reclap/ppx.exe
+
+*.log
+.DS_Store
