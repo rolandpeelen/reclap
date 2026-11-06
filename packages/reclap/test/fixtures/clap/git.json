@@ -1,0 +1,1052 @@
+{
+  "cli": "git",
+  "clapVersion": "4.6.7",
+  "cases": [
+    {
+      "name": "empty-argv",
+      "argv": [],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "A fictional version control system\n\nUsage: git [OPTIONS] <COMMAND>\n\nCommands:\n  clone   Clone a repository into a new directory\n  add     Add file contents to the index\n  status  Show the working tree status\n  commit  Record changes to the repository [alias: ci]\n  remote  Manage the set of tracked repositories\n  stash   Stash the changes in a dirty working directory\n  gc      \n  rm      Remove files from the working tree and the index\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -C <PATH>      Run as if started in PATH\n  -q, --quiet    Suppress output\n  -h, --help     Print help\n  -V, --version  Print version\n",
+      "parsed": null
+    },
+    {
+      "name": "short-help",
+      "argv": [
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "A fictional version control system\n\nUsage: git [OPTIONS] <COMMAND>\n\nCommands:\n  clone   Clone a repository into a new directory\n  add     Add file contents to the index\n  status  Show the working tree status\n  commit  Record changes to the repository [alias: ci]\n  remote  Manage the set of tracked repositories\n  stash   Stash the changes in a dirty working directory\n  gc      \n  rm      Remove files from the working tree and the index\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -C <PATH>      Run as if started in PATH\n  -q, --quiet    Suppress output\n  -h, --help     Print help\n  -V, --version  Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "long-help",
+      "argv": [
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "A fictional version control system\n\nUsage: git [OPTIONS] <COMMAND>\n\nCommands:\n  clone   Clone a repository into a new directory\n  add     Add file contents to the index\n  status  Show the working tree status\n  commit  Record changes to the repository [alias: ci]\n  remote  Manage the set of tracked repositories\n  stash   Stash the changes in a dirty working directory\n  gc      \n  rm      Remove files from the working tree and the index\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -C <PATH>      Run as if started in PATH\n  -q, --quiet    Suppress output\n  -h, --help     Print help\n  -V, --version  Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "short-version",
+      "argv": [
+        "-V"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "git 2.0.0\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "long-version",
+      "argv": [
+        "--version"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "git 2.0.0\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help",
+      "argv": [
+        "help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "A fictional version control system\n\nUsage: git [OPTIONS] <COMMAND>\n\nCommands:\n  clone   Clone a repository into a new directory\n  add     Add file contents to the index\n  status  Show the working tree status\n  commit  Record changes to the repository [alias: ci]\n  remote  Manage the set of tracked repositories\n  stash   Stash the changes in a dirty working directory\n  gc      \n  rm      Remove files from the working tree and the index\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -C <PATH>      Run as if started in PATH\n  -q, --quiet    Suppress output\n  -h, --help     Print help\n  -V, --version  Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-clone",
+      "argv": [
+        "help",
+        "clone"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-remote",
+      "argv": [
+        "help",
+        "remote"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Manage the set of tracked repositories\n\nUsage: git remote [OPTIONS] [COMMAND]\n\nCommands:\n  add     Add a remote named NAME for the repository at URL\n  remove  Remove the remote named NAME\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -v, --verbose  Show remote URLs\n  -h, --help     Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-remote-add",
+      "argv": [
+        "help",
+        "remote",
+        "add"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Add a remote named NAME for the repository at URL\n\nUsage: git remote add <NAME> <URL>\n\nArguments:\n  <NAME>  Name of the remote\n  <URL>   URL of the remote\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-help",
+      "argv": [
+        "help",
+        "help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Print this message or the help of the given subcommand(s)\n\nUsage: git help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "help-unknown",
+      "argv": [
+        "help",
+        "nope"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'nope'\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "help-alias",
+      "argv": [
+        "help",
+        "ci"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Record changes to the repository\n\nUsage: git commit [OPTIONS] --message <MESSAGE>\n\nOptions:\n  -m, --message <MESSAGE>  Use the given message as the commit message\n  -a, --all                Stage all modified files first\n  -h, --help               Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "clone-short-help",
+      "argv": [
+        "clone",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Clone a repository into a new directory\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>     The repository to clone from\n  [DIRECTORY]  The directory to clone into\n\nOptions:\n      --depth <DEPTH>  Create a shallow clone with this many commits\n  -h, --help           Print help (see more with '--help')\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "clone-long-help",
+      "argv": [
+        "clone",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Clone a repository into a new directory.\n\nClones a repository into a newly created directory and creates remote-tracking branches for each branch in the cloned repository.\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nArguments:\n  <REMOTE>\n          The repository to clone from\n\n  [DIRECTORY]\n          The directory to clone into\n\nOptions:\n      --depth <DEPTH>\n          Create a shallow clone with this many commits\n\n  -h, --help\n          Print help (see a summary with '-h')\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "add-help",
+      "argv": [
+        "add",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Add file contents to the index\n\nUsage: git add [OPTIONS] [PATHS]...\n\nArguments:\n  [PATHS]...  Files to add content from\n\nOptions:\n  -n, --dry-run  Don't actually add the files\n  -h, --help     Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "status-help",
+      "argv": [
+        "status",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Show the working tree status\n\nUsage: git status\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "commit-help",
+      "argv": [
+        "commit",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Record changes to the repository\n\nUsage: git commit [OPTIONS] --message <MESSAGE>\n\nOptions:\n  -m, --message <MESSAGE>  Use the given message as the commit message\n  -a, --all                Stage all modified files first\n  -h, --help               Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "remote-help",
+      "argv": [
+        "remote",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Manage the set of tracked repositories\n\nUsage: git remote [OPTIONS] [COMMAND]\n\nCommands:\n  add     Add a remote named NAME for the repository at URL\n  remove  Remove the remote named NAME\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -v, --verbose  Show remote URLs\n  -h, --help     Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "remote-add-help",
+      "argv": [
+        "remote",
+        "add",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Add a remote named NAME for the repository at URL\n\nUsage: git remote add <NAME> <URL>\n\nArguments:\n  <NAME>  Name of the remote\n  <URL>   URL of the remote\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "stash-help",
+      "argv": [
+        "stash",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Stash the changes in a dirty working directory\n\nUsage: git stash <COMMAND>\n\nCommands:\n  push  Save local modifications to a new stash entry\n  pop   Remove a stash entry and apply it\n  help  Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "stash-empty",
+      "argv": [
+        "stash"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "Stash the changes in a dirty working directory\n\nUsage: git stash <COMMAND>\n\nCommands:\n  push  Save local modifications to a new stash entry\n  pop   Remove a stash entry and apply it\n  help  Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help\n",
+      "parsed": null
+    },
+    {
+      "name": "rm-help",
+      "argv": [
+        "rm",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Remove files from the working tree and the index\n\nUsage: git rm [FILES]...\n\nArguments:\n  [FILES]...  Files to remove\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "subcommand-version",
+      "argv": [
+        "clone",
+        "--version"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--version' found\n\n  tip: to pass '--version' as a value, use '-- --version'\n\nUsage: git clone [OPTIONS] <REMOTE> [DIRECTORY]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "clone",
+      "argv": [
+        "clone",
+        "https://example.com/repo"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Clone": {
+              "remote": "https://example.com/repo",
+              "directory": null,
+              "depth": null
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: None, depth: None } }"
+      }
+    },
+    {
+      "name": "clone-with-dir",
+      "argv": [
+        "clone",
+        "--depth",
+        "1",
+        "https://example.com/repo",
+        "out"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Clone": {
+              "remote": "https://example.com/repo",
+              "directory": "out",
+              "depth": 1
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Clone { remote: \"https://example.com/repo\", directory: Some(\"out\"), depth: Some(1) } }"
+      }
+    },
+    {
+      "name": "global-before-subcommand",
+      "argv": [
+        "-C",
+        "/tmp",
+        "-q",
+        "status"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": "/tmp",
+            "quiet": true
+          },
+          "command": "Status"
+        },
+        "debug": "Git { global: GlobalOpts { directory: Some(\"/tmp\"), quiet: true }, command: Status }"
+      }
+    },
+    {
+      "name": "global-after-subcommand",
+      "argv": [
+        "status",
+        "-q"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-q' found\n\nUsage: git status\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "add-newtype",
+      "argv": [
+        "add",
+        "-n",
+        "a.txt",
+        "b.txt"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Add": {
+              "dry_run": true,
+              "paths": [
+                "a.txt",
+                "b.txt"
+              ]
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Add(AddArgs { dry_run: true, paths: [\"a.txt\", \"b.txt\"] }) }"
+      }
+    },
+    {
+      "name": "add-no-paths",
+      "argv": [
+        "add"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Add": {
+              "dry_run": false,
+              "paths": []
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Add(AddArgs { dry_run: false, paths: [] }) }"
+      }
+    },
+    {
+      "name": "unit-variant",
+      "argv": [
+        "status"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": "Status"
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Status }"
+      }
+    },
+    {
+      "name": "hidden-alias",
+      "argv": [
+        "st"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": "Status"
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Status }"
+      }
+    },
+    {
+      "name": "visible-alias",
+      "argv": [
+        "ci",
+        "-m",
+        "msg"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Commit": {
+              "message": "msg",
+              "all": false
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Commit { message: \"msg\", all: false } }"
+      }
+    },
+    {
+      "name": "commit-combined",
+      "argv": [
+        "commit",
+        "-am",
+        "msg"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Commit": {
+              "message": "msg",
+              "all": true
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Commit { message: \"msg\", all: true } }"
+      }
+    },
+    {
+      "name": "remote-without-subcommand",
+      "argv": [
+        "remote"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Remote": {
+              "verbose": false,
+              "command": null
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Remote { verbose: false, command: None } }"
+      }
+    },
+    {
+      "name": "remote-verbose",
+      "argv": [
+        "remote",
+        "-v"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Remote": {
+              "verbose": true,
+              "command": null
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Remote { verbose: true, command: None } }"
+      }
+    },
+    {
+      "name": "remote-add",
+      "argv": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.com/repo"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Remote": {
+              "verbose": false,
+              "command": {
+                "Add": {
+                  "name": "origin",
+                  "url": "https://example.com/repo"
+                }
+              }
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Remote { verbose: false, command: Some(Add { name: \"origin\", url: \"https://example.com/repo\" }) } }"
+      }
+    },
+    {
+      "name": "remote-remove-alias",
+      "argv": [
+        "remote",
+        "rm",
+        "origin"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Remote": {
+              "verbose": false,
+              "command": {
+                "Remove": {
+                  "name": "origin"
+                }
+              }
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Remote { verbose: false, command: Some(Remove { name: \"origin\" }) } }"
+      }
+    },
+    {
+      "name": "stash-push",
+      "argv": [
+        "stash",
+        "push",
+        "-m",
+        "wip"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Stash": {
+              "Push": {
+                "message": "wip"
+              }
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Stash(Push { message: Some(\"wip\") }) }"
+      }
+    },
+    {
+      "name": "stash-pop",
+      "argv": [
+        "stash",
+        "pop"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Stash": {
+              "Pop": {
+                "index": false
+              }
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Stash(Pop { index: false }) }"
+      }
+    },
+    {
+      "name": "stash-pop-help",
+      "argv": [
+        "stash",
+        "pop",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Remove a stash entry and apply it\n\nUsage: git stash pop [OPTIONS]\n\nOptions:\n      --index  \n  -h, --help   Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "stash-pop-long-help",
+      "argv": [
+        "stash",
+        "pop",
+        "--help"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Remove a stash entry and apply it\n\nUsage: git stash pop [OPTIONS]\n\nOptions:\n      --index  \n  -h, --help   Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "undocumented-subcommand",
+      "argv": [
+        "gc"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": "Gc"
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Gc }"
+      }
+    },
+    {
+      "name": "rm-many",
+      "argv": [
+        "rm",
+        "a",
+        "b",
+        "c"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Rm": {
+              "files": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Rm { files: [\"a\", \"b\", \"c\"] } }"
+      }
+    },
+    {
+      "name": "rm-double-dash",
+      "argv": [
+        "rm",
+        "--",
+        "-a",
+        "--b"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Rm": {
+              "files": [
+                "-a",
+                "--b"
+              ]
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Rm { files: [\"-a\", \"--b\"] } }"
+      }
+    },
+    {
+      "name": "rm-none",
+      "argv": [
+        "rm"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "global": {
+            "directory": null,
+            "quiet": false
+          },
+          "command": {
+            "Rm": {
+              "files": []
+            }
+          }
+        },
+        "debug": "Git { global: GlobalOpts { directory: None, quiet: false }, command: Rm { files: [] } }"
+      }
+    },
+    {
+      "name": "unknown-subcommand-with-suggestion",
+      "argv": [
+        "comit"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'comit'\n\n  tip: a similar subcommand exists: 'commit'\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-subcommand-without-suggestion",
+      "argv": [
+        "frobnicate"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'frobnicate'\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-nested-subcommand",
+      "argv": [
+        "remote",
+        "ad",
+        "x",
+        "y"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'ad'\n\n  tip: a similar subcommand exists: 'add'\n\nUsage: git remote [OPTIONS] [COMMAND]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-long-top",
+      "argv": [
+        "--quite",
+        "status"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--quite' found\n\n  tip: a similar argument exists: '--quiet'\n\nUsage: git --quiet <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-long-in-subcommand",
+      "argv": [
+        "commit",
+        "--mesage",
+        "x"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--mesage' found\n\n  tip: a similar argument exists: '--message'\n\nUsage: git commit --message <MESSAGE>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-long-for-other-subcommand",
+      "argv": [
+        "status",
+        "--depth",
+        "1"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--depth' found\n\nUsage: git status\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-required-in-subcommand",
+      "argv": [
+        "commit"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --message <MESSAGE>\n\nUsage: git commit --message <MESSAGE>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-positional",
+      "argv": [
+        "clone"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  <REMOTE>\n\nUsage: git clone <REMOTE> [DIRECTORY]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-nested-positionals",
+      "argv": [
+        "remote",
+        "add"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  <NAME>\n  <URL>\n\nUsage: git remote add <NAME> <URL>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "invalid-int-in-subcommand",
+      "argv": [
+        "clone",
+        "--depth",
+        "x",
+        "r"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'x' for '--depth <DEPTH>': invalid digit found in string\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unexpected-positional-for-unit-variant",
+      "argv": [
+        "status",
+        "extra"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'extra' found\n\nUsage: git status\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-with-value",
+      "argv": [
+        "-q=yes",
+        "status"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-=' found\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-value-short",
+      "argv": [
+        "-C"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '-C <PATH>' but none was supplied\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "missing-subcommand-with-args",
+      "argv": [
+        "-q"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: 'git' requires a subcommand but one was not provided\n  [subcommands: clone, add, status, st, commit, ci, remote, stash, gc, rm, help]\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-subcommand-several-suggestions",
+      "argv": [
+        "sta"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'sta'\n\n  tip: some similar subcommands exist: 'status', 'stash', 'st'\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "unknown-long-suggested-from-subcommand",
+      "argv": [
+        "--dept",
+        "1",
+        "clone",
+        "r"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--dept' found\n\n  tip: 'clone --depth' exists\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "double-dash-before-subcommand",
+      "argv": [
+        "--",
+        "status"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'status' found\n\n  tip: subcommand 'status' exists; to use it, remove the '--' before it\n\nUsage: git [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "nested-help-subcommand",
+      "argv": [
+        "remote",
+        "help",
+        "add"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Add a remote named NAME for the repository at URL\n\nUsage: git remote add <NAME> <URL>\n\nArguments:\n  <NAME>  Name of the remote\n  <URL>   URL of the remote\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "unexpected-extra-positional-nested",
+      "argv": [
+        "remote",
+        "add",
+        "a",
+        "b",
+        "c"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'c' found\n\nUsage: git remote add <NAME> <URL>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    }
+  ]
+}
