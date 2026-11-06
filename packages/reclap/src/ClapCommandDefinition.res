@@ -6,6 +6,7 @@ command before `ClapCommand` is defined. */
 type rec t = {
   name: string,
   aliases: array<string>,
+  visibleAliases: array<string>,
   version: option<string>,
   about: option<string>,
   longAbout: option<string>,
@@ -22,6 +23,7 @@ let helpSubcommandAbout = "Print this message or the help of the given subcomman
 let make = name => {
   name,
   aliases: [],
+  visibleAliases: [],
   version: None,
   about: None,
   longAbout: None,
@@ -82,7 +84,10 @@ let helpSubcommand = {
   ...make("help"),
   about: Some(helpSubcommandAbout),
   args: [
-    ClapArg.make("subcommand")->ClapArg.valueName("COMMAND")->ClapArg.action(ClapArg.Append),
+    ClapArg.make("subcommand")
+    ->ClapArg.valueName("COMMAND")
+    ->ClapArg.action(ClapArg.Append)
+    ->ClapArg.help("Print help for the subcommand(s)"),
   ],
 }
 
@@ -107,11 +112,16 @@ let positionals = command => command.args->Array.filter(ClapArg.isPositional)
 let named = command => command.args->Array.filter(arg => !ClapArg.isPositional(arg))
 
 let findLong = (command, long) =>
-  command.args->Array.find(arg => isSomeString(arg.long, long) || arg.aliases->Array.includes(long))
+  command.args->Array.find(arg =>
+    isSomeString(arg.long, long) ||
+    arg.aliases->Array.includes(long) ||
+    arg.visibleAliases->Array.includes(long))
 
 let findShort = (command, short) => command.args->Array.find(arg => isSomeString(arg.short, short))
 
 let findSubcommand = (command, name) =>
   command.subcommands->Array.find(subcommand =>
-    subcommand.name == name || subcommand.aliases->Array.includes(name)
+    subcommand.name == name ||
+    subcommand.aliases->Array.includes(name) ||
+    subcommand.visibleAliases->Array.includes(name)
   )

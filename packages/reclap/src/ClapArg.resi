@@ -18,6 +18,7 @@ type t = {
   short: option<string>,
   long: option<string>,
   aliases: array<string>,
+  visibleAliases: array<string>,
   help: option<string>,
   longHelp: option<string>,
   valueName: option<string>,
@@ -41,6 +42,9 @@ let long: (t, string) => t
 
 /** Adds a hidden alternative long name. */
 let alias: (t, string) => t
+
+/** Adds an alternative long name that help shows as `[aliases: --x]`. */
+let visibleAlias: (t, string) => t
 
 /** Sets the help shown by `-h`. */
 let help: (t, string) => t
