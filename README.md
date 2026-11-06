@@ -138,7 +138,7 @@ type addArgs = {@arg({short: "n", long}) dryRun: bool, paths: array<string>}
 type command =
   | Add(addArgs) // a newtype variant, like `Add(AddArgs)` in Rust
   | @command({visibleAlias: "ci"}) Commit({@arg({short, long}) message: string})
-  | @command({subcommand}) Remote(option<remote>) // nested; optional
+  | @command(subcommand) Remote(option<remote>) // nested; optional
   | Status
 ```
 
@@ -161,8 +161,9 @@ The runtime mirrors clap's builder API and works on its own:
 
 ```rescript
 let command =
-  Clap.Command.make("prog")
-  ->Clap.Command.arg(Clap.Arg.make("name")->Clap.Arg.short("n")->Clap.Arg.long("name"))
+  Clap.Command.make("prog")->Clap.Command.arg(
+    Clap.Arg.make("name")->Clap.Arg.short("n")->Clap.Arg.long("name"),
+  )
 
 switch Clap.getMatchesFrom(command, ["prog", "-n", "Ann"]) {
 | Ok(matches) => Clap.Matches.getOne(matches, "name", Clap.ValueParser.string)
