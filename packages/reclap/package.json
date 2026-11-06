@@ -4,16 +4,34 @@
   "description": "Derive command line parsers from ReScript types, in the style of Rust's clap.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rolandpeelen/reclap.git",
+    "directory": "packages/reclap"
+  },
+  "homepage": "https://github.com/rolandpeelen/reclap#readme",
+  "bugs": {
+    "url": "https://github.com/rolandpeelen/reclap/issues"
+  },
+  "keywords": [
+    "rescript",
+    "clap",
+    "cli",
+    "argument-parser",
+    "ppx"
+  ],
   "files": [
     "src",
     "rescript.json",
-    "ppx.exe",
+    "bin",
+    "postinstall.js",
     "dune",
     "dune-project",
     "ppx/bin",
     "ppx/lib"
   ],
   "scripts": {
+    "postinstall": "node postinstall.js",
     "build:ppx": "dune build",
     "build": "npm run build:ppx && rescript build",
     "clean": "rescript clean && dune clean",
@@ -25,5 +43,11 @@
   "devDependencies": {
     "rescript": "12.3.1",
     "vitest": "3.2.7"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
