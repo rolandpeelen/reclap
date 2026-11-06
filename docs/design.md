@@ -46,7 +46,11 @@ A field without `short` or `long` is positional. Names are derived from the
 field name: `long` is the kebab-case name, `short` its first character,
 `value_name` the SCREAMING_SNAKE_CASE name, `env` the SCREAMING_SNAKE_CASE
 name. Doc comments become `about`/`help`; when a doc comment has more than one
-paragraph, the whole comment also becomes `long_about`/`long_help`.
+paragraph, the whole comment also becomes `long_about`/`long_help`. As in
+`clap_derive`, paragraphs are separated by blank lines and the lines of a
+paragraph are trimmed and joined with spaces. The summary is the first
+paragraph without one trailing `.` (`...` is kept); the long text is every
+paragraph, joined by an empty line, with periods kept.
 
 ## The ReScript surface
 
@@ -93,7 +97,8 @@ name for a type named `t`), `version: string`, `about: string`,
 where `T` has `@clap.args`).
 
 `@command({...})` on a subcommand constructor: `name`, `about`, `longAbout`,
-`alias: string`, `aliases: array<string>`, `hide`, and `subcommand` (the
+`alias: string`, `aliases: array<string>` (hidden), `visibleAlias: string`,
+`visibleAliases: array<string>` (shown in help), `hide`, and `subcommand` (the
 constructor payload is a `@clap.subcommand` type whose subcommands nest under
 this one).
 
@@ -110,6 +115,7 @@ this one).
 | `valueName: "FILE"`    | placeholder in usage and help                                           |
 | `id: "x"`              | argument id; default: the field name                                    |
 | `alias: "x"`, `aliases: [..]` | hidden long aliases                                              |
+| `visibleAlias: "x"`, `visibleAliases: [..]` | long aliases shown in help                                 |
 | `action: Count`        | `Set`, `Append`, `SetTrue`, `SetFalse` or `Count` (`Count` needs `int`) |
 | `required: bool`       | overrides the inferred requiredness                                     |
 | `valueParser: expr`    | a `Clap.ValueParser.t<T>` for the field's element type                  |
@@ -209,18 +215,20 @@ let args: Clap.Args.t<t> = Clap.Args.make(
   __clap_matches =>
     switch Clap.Matches.getRequired(__clap_matches, "name", Clap.ValueParser.string) {
     | Error(__clap_error) => Error(__clap_error)
-    | Ok(__clap_name) =>
+    | Ok(__clap_field_name) =>
       switch Clap.Matches.getRequired(__clap_matches, "count", Clap.ValueParser.int) {
       | Error(__clap_error) => Error(__clap_error)
-      | Ok(__clap_count) =>
-        switch Ok(Clap.Matches.getCount(__clap_matches, "verbose")) {
+      | Ok(__clap_field_count) =>
+        let __clap_field_verbose = Clap.Matches.getCount(__clap_matches, "verbose")
+        switch Clap.Subcommand.fromMatchesOptional(commandSubcommand, __clap_matches) {
         | Error(__clap_error) => Error(__clap_error)
-        | Ok(__clap_verbose) =>
-          switch Clap.Subcommand.fromMatchesOptional(commandSubcommand, __clap_matches) {
-          | Error(__clap_error) => Error(__clap_error)
-          | Ok(__clap_command) =>
-            Ok({name: __clap_name, count: __clap_count, verbose: __clap_verbose, command: __clap_command})
-          }
+        | Ok(__clap_field_command) =>
+          Ok(({
+            name: __clap_field_name,
+            count: __clap_field_count,
+            verbose: __clap_field_verbose,
+            command: __clap_field_command,
+          }: t))
         }
       }
     },
@@ -231,6 +239,15 @@ let parser: Clap.Parser.t<t> = Clap.Parser.fromArgs(
   args,
 )
 ```
+
+Field values are bound to `__clap_field_<name>`, so a field named `command`,
+`matches` or `error` cannot shadow the generated `__clap_command`,
+`__clap_matches` and `__clap_error`. Reads that cannot fail (`getFlag`,
+`getCount`, `skip`) are plain `let` bindings. Built values carry a type
+annotation (`(... : t)`) so record and constructor disambiguation never picks
+another type with the same field or constructor names. A lambda whose
+parameter would be unused, such as the decoder of a record with only `skip`
+fields, takes `_`.
 
 A `@clap.subcommand` variant generates:
 
@@ -244,7 +261,7 @@ let commandSubcommand: Clap.Subcommand.t<command> = Clap.Subcommand.make(
   __clap_matches =>
     switch Clap.Matches.subcommand(__clap_matches) {
     | Some(("add", __clap_matches)) => /* decode the fields, then */ Ok(Add({...}))
-    | Some(("status", __clap_matches)) => Ok(Status)
+    | Some(("status", _)) => Ok((Status: command))
     | Some(_) | None => Clap.Matches.missingSubcommand(__clap_matches)
     },
 )
@@ -264,8 +281,8 @@ A `@clap.valueEnum` variant generates:
 
 ```rescript
 let levelValueParser: Clap.ValueParser.t<level> = Clap.ValueParser.enum([
-  (Debug, Clap.PossibleValue.help(Clap.PossibleValue.make("debug"), "Everything")),
-  (Info, Clap.PossibleValue.make("info")),
+  ((Debug: level), Clap.PossibleValue.help(Clap.PossibleValue.make("debug"), "Everything")),
+  ((Info: level), Clap.PossibleValue.make("info")),
 ])
 ```
 
