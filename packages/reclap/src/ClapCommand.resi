@@ -33,7 +33,7 @@ let about: (t, string) => t
 /** Sets the description shown by `--help`. */
 let longAbout: (t, string) => t
 
-/** Sets the author. */
+/** Sets the author. Stored on the command; help rendering does not print it. */
 let author: (t, string) => t
 
 /** Adds a hidden alternative name for a subcommand. */
