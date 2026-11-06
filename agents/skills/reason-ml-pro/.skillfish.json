@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "rescript-pro",
+  "owner": "rbergman",
+  "repo": "dark-matter-marketplace",
+  "path": "plugins/language-pro/skills/rescript-pro",
+  "branch": "main",
+  "sha": "ae40ef75fe35e788e62c10788d63d310b0dace1a",
+  "source": "manual"
+}
