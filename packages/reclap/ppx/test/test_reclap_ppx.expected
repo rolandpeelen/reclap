@@ -1,0 +1,52 @@
+
+## Casing.convert
+kebab-case             foo-bar foo-bar config-file http-server parse-http2-response dry-run already-kebab x a1-b auto-detect json-lines io
+snake_case             foo_bar foo_bar config_file http_server parse_http2_response dry_run already_kebab x a1_b auto_detect json_lines io
+camelCase              fooBar fooBar configFile httpServer parseHttp2Response dryRun alreadyKebab x a1B autoDetect jsonLines io
+PascalCase             FooBar FooBar ConfigFile HttpServer ParseHttp2Response DryRun AlreadyKebab X A1B AutoDetect JsonLines Io
+SCREAMING_SNAKE_CASE   FOO_BAR FOO_BAR CONFIG_FILE HTTP_SERVER PARSE_HTTP2_RESPONSE DRY_RUN ALREADY_KEBAB X A1_B AUTO_DETECT JSON_LINES IO
+lower                  foobar foobar configfile httpserver parsehttp2response dry_run already-kebab x a1b autodetect jsonlines io
+UPPER                  FOOBAR FOOBAR CONFIGFILE HTTPSERVER PARSEHTTP2RESPONSE DRY_RUN ALREADY-KEBAB X A1B AUTODETECT JSONLINES IO
+verbatim               fooBar FooBar configFile HTTPServer parseHTTP2Response dry_run already-kebab x a1B AutoDetect JsonLines IO
+words HTTPServer: [HTTP; Server]
+of_string "Kebab": true
+
+## Doc_comment.parse
+" Name of the person to greet " ->
+  summary "Name of the person to greet"
+  long    None
+" Ends with a period. " ->
+  summary "Ends with a period"
+  long    None
+" Ends with an ellipsis... " ->
+  summary "Ends with an ellipsis..."
+  long    None
+" Two lines\n  joined with a space. " ->
+  summary "Two lines joined with a space"
+  long    None
+" Summary.\n\n  Second paragraph\n  over two lines.\n\n  Third. " ->
+  summary "Summary"
+  long    "Summary.\n\nSecond paragraph over two lines.\n\nThird."
+"\n  Leading and trailing blank lines \n\n" ->
+  summary "Leading and trailing blank lines"
+  long    None
+"   " -> None
+"" -> None
+
+## Naming
+Args t -> args
+Args addArgs -> addArgsArgs
+Subcommand t -> subcommand
+Subcommand command -> commandSubcommand
+ValueParser t -> valueParser
+ValueParser level -> levelValueParser
+Parser t -> parser
+Parser tool -> toolParser
+Git.remote subcommand -> Git.remoteSubcommand
+Level.t value parser -> Level.valueParser
+module of Greet.res -> Greet
+module of test/ppx/GitLike.res -> GitLike
+module of Api.resi -> Api
+module of /abs/path/Foo.bar.res -> Foo
+command name of GitLike.t -> git-like
+command name of myTool -> my-tool

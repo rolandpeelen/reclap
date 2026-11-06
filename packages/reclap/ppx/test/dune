@@ -1,0 +1,5 @@
+; Unit tests for the pure parts of the PPX. The output is compared with
+; test_reclap_ppx.expected; `dune promote` accepts a new output.
+(test
+ (name test_reclap_ppx)
+ (libraries reclap_ppx))
