@@ -7,6 +7,6 @@
   ],
   "package-specs": [{"module": "esmodule", "in-source": true}],
   "suffix": ".res.mjs",
-  "ppx-flags": ["./ppx.exe"],
+  "ppx-flags": ["./bin/ppx"],
   "warnings": {"number": "+a-48-30", "error": "+a-3-44-102"}
 }
