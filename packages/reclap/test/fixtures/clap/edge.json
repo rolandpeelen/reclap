@@ -1,0 +1,1170 @@
+{
+  "cli": "edge",
+  "clapVersion": "4.6.7",
+  "cases": [
+    {
+      "name": "short-help",
+      "argv": [
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Edge cases of the clap parser\n\nUsage: edge [COMMAND]\n\nCommands:\n  flags   Flags and counters read from the environment\n  need    Requires an argument, else prints help\n  pos     A positional and a subcommand\n  multi   A multi-value positional and a subcommand\n  hid     Hidden required arguments\n  emoji   Non-BMP characters\n  strict  A required subcommand and an environment value\n  help    Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help     Print help\n  -V, --version  Print version\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "empty-argv",
+      "argv": [],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": null
+        }
+      }
+    },
+    {
+      "name": "help-with-value",
+      "argv": [
+        "--help=foo"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected value 'foo' for '--help' found; no more were expected\n\nUsage: edge --help\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "version-with-value",
+      "argv": [
+        "--version=1"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected value '1' for '--version' found; no more were expected\n\nUsage: edge --version\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "subcommand-help-with-value",
+      "argv": [
+        "flags",
+        "--help=foo"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected value 'foo' for '--help' found; no more were expected\n\nUsage: edge flags --help\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flags-absent",
+      "argv": [
+        "flags"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "plain": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "verbose": {
+                  "values": [
+                    "0"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "flags-given",
+      "argv": [
+        "flags",
+        "--flag",
+        "--plain",
+        "-vv"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                },
+                "plain": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "CommandLine"
+                },
+                "verbose": {
+                  "values": [
+                    "2"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "flags-env-true",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "FLAG": "true",
+        "PLAIN": "true"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "EnvVariable"
+                },
+                "plain": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "EnvVariable"
+                },
+                "verbose": {
+                  "values": [
+                    "0"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "flags-env-false",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "FLAG": "false",
+        "PLAIN": "false"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "EnvVariable"
+                },
+                "plain": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "EnvVariable"
+                },
+                "verbose": {
+                  "values": [
+                    "0"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "flag-env-yes",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "FLAG": "yes"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'yes' for '--flag'\n  [possible values: true, false]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-env-similar",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "FLAG": "ture"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'ture' for '--flag'\n  [possible values: true, false]\n\n  tip: a similar value exists: 'true'\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-env-empty",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "FLAG": ""
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: a value is required for '--flag' but none was supplied\n  [possible values: true, false]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "set-false-env-garbage",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "PLAIN": "1"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '1' for '--plain'\n  [possible values: true, false]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flag-env-ignored-when-given",
+      "argv": [
+        "flags",
+        "--flag"
+      ],
+      "env": {
+        "FLAG": "garbage"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                },
+                "plain": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "verbose": {
+                  "values": [
+                    "0"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "count-env",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "VCOUNT": "3"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "plain": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "verbose": {
+                  "values": [
+                    "3"
+                  ],
+                  "source": "EnvVariable"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "count-env-invalid",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "VCOUNT": "x"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'x' for '-v...': invalid digit found in string\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "count-env-too-large",
+      "argv": [
+        "flags"
+      ],
+      "env": {
+        "VCOUNT": "300"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '300' for '-v...': 300 is not in 0..=255\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "count-env-ignored-when-given",
+      "argv": [
+        "flags",
+        "-v"
+      ],
+      "env": {
+        "VCOUNT": "7"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "flags",
+            "matches": {
+              "args": {
+                "flag": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "plain": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "DefaultValue"
+                },
+                "verbose": {
+                  "values": [
+                    "1"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "flags-help-with-env",
+      "argv": [
+        "flags",
+        "--help"
+      ],
+      "env": {
+        "FLAG": "yes",
+        "VCOUNT": "2"
+      },
+      "exitCode": 0,
+      "stdout": "Flags and counters read from the environment\n\nUsage: edge flags [OPTIONS]\n\nOptions:\n      --flag   A SetTrue flag [env: FLAG=yes]\n      --plain  A SetFalse flag [env: PLAIN=]\n  -v...        A counter [env: VCOUNT=2]\n  -h, --help   Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "need-empty",
+      "argv": [
+        "need"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "Requires an argument, else prints help\n\nUsage: edge need [OPTIONS]\n\nOptions:\n      --name <name>  Who [env: NAME=]\n  -h, --help         Print help\n",
+      "parsed": null
+    },
+    {
+      "name": "need-env",
+      "argv": [
+        "need"
+      ],
+      "env": {
+        "NAME": "bob"
+      },
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "need",
+            "matches": {
+              "args": {
+                "name": {
+                  "values": [
+                    "bob"
+                  ],
+                  "source": "EnvVariable"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "need-given",
+      "argv": [
+        "need",
+        "--name",
+        "ann"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "need",
+            "matches": {
+              "args": {
+                "name": {
+                  "values": [
+                    "ann"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "pos-unexpected-after-full",
+      "argv": [
+        "pos",
+        "a",
+        "zzz"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'zzz' found\n\nUsage: edge pos [file] [COMMAND]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "pos-transposed-word-after-full",
+      "argv": [
+        "pos",
+        "a",
+        "rnu"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'rnu' found\n\nUsage: edge pos [file] [COMMAND]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "pos-similar-subcommand-after-full",
+      "argv": [
+        "pos",
+        "a",
+        "runn"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unrecognized subcommand 'runn'\n\n  tip: a similar subcommand exists: 'run'\n\nUsage: edge pos [file] [COMMAND]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "flags-extra-word-without-subcommands",
+      "argv": [
+        "flags",
+        "zzz"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument 'zzz' found\n\nUsage: edge flags [OPTIONS]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "pos-similar-word-fills-positional",
+      "argv": [
+        "pos",
+        "rnu"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "pos",
+            "matches": {
+              "args": {
+                "file": {
+                  "values": [
+                    "rnu"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "pos-then-subcommand",
+      "argv": [
+        "pos",
+        "a",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "pos",
+            "matches": {
+              "args": {
+                "file": {
+                  "values": [
+                    "a"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": {
+                "name": "run",
+                "matches": {
+                  "args": {},
+                  "subcommand": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "pos-help",
+      "argv": [
+        "pos",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "A positional and a subcommand\n\nUsage: edge pos [file] [COMMAND]\n\nCommands:\n  run   Run it\n  help  Print this message or the help of the given subcommand(s)\n\nArguments:\n  [file]  A file\n\nOptions:\n  -h, --help  Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "pos-unknown-long",
+      "argv": [
+        "pos",
+        "--zzz"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--zzz' found\n\n  tip: to pass '--zzz' as a value, use '-- --zzz'\n\nUsage: edge pos [file] [COMMAND]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "multi-subcommand-name-is-value",
+      "argv": [
+        "multi",
+        "a",
+        "b",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "multi",
+            "matches": {
+              "args": {
+                "files": {
+                  "values": [
+                    "a",
+                    "b",
+                    "run"
+                  ],
+                  "source": "CommandLine"
+                },
+                "loud": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "multi-subcommand-after-one-value",
+      "argv": [
+        "multi",
+        "a",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "multi",
+            "matches": {
+              "args": {
+                "files": {
+                  "values": [
+                    "a",
+                    "run"
+                  ],
+                  "source": "CommandLine"
+                },
+                "loud": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "multi-subcommand-first",
+      "argv": [
+        "multi",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "multi",
+            "matches": {
+              "args": {
+                "loud": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": {
+                "name": "run",
+                "matches": {
+                  "args": {},
+                  "subcommand": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "multi-subcommand-after-flag",
+      "argv": [
+        "multi",
+        "a",
+        "--loud",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "multi",
+            "matches": {
+              "args": {
+                "files": {
+                  "values": [
+                    "a"
+                  ],
+                  "source": "CommandLine"
+                },
+                "loud": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": {
+                "name": "run",
+                "matches": {
+                  "args": {},
+                  "subcommand": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "multi-subcommand-after-double-dash",
+      "argv": [
+        "multi",
+        "--",
+        "run"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "multi",
+            "matches": {
+              "args": {
+                "files": {
+                  "values": [
+                    "run"
+                  ],
+                  "source": "CommandLine"
+                },
+                "loud": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "hid-help",
+      "argv": [
+        "hid",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Hidden required arguments\n\nUsage: edge hid [OPTIONS] --secret <secret> --out <out> <token>\n\nOptions:\n      --out <out>    Output\n      --name <name>  Name [env: NAME=]\n      --opt <opt>    Optional\n  -h, --help         Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "hid-missing-with-env",
+      "argv": [
+        "hid",
+        "--hid",
+        "h"
+      ],
+      "env": {
+        "NAME": "n"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --secret <secret>\n  --out <out>\n  <token>\n\nUsage: edge hid --secret <secret> --out <out> --name <name> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-missing",
+      "argv": [
+        "hid"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the following required arguments were not provided:\n  --secret <secret>\n  --out <out>\n  <token>\n\nUsage: edge hid --secret <secret> --out <out> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-unknown-after-hidden",
+      "argv": [
+        "hid",
+        "--hid",
+        "h",
+        "--bogus"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--bogus' found\n\n  tip: to pass '--bogus' as a value, use '-- --bogus'\n\nUsage: edge hid [OPTIONS] --secret <secret> --out <out> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-unknown-after-visible",
+      "argv": [
+        "hid",
+        "--opt",
+        "o",
+        "--bogus"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--bogus' found\n\n  tip: to pass '--bogus' as a value, use '-- --bogus'\n\nUsage: edge hid --secret <secret> --out <out> --opt <opt> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-unknown-suggests-hidden",
+      "argv": [
+        "hid",
+        "--opt",
+        "o",
+        "--secrt",
+        "s"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '--secrt' found\n\n  tip: a similar argument exists: '--secret'\n\nUsage: edge hid --secret <secret> --out <out> --opt <opt> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-flag-like-value-unknown-short",
+      "argv": [
+        "hid",
+        "-q"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-q' found\n\n  tip: to pass '-q' as a value, use '-- -q'\n\nUsage: edge hid [OPTIONS] --secret <secret> --out <out> <token>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "hid-complete",
+      "argv": [
+        "hid",
+        "--secret",
+        "s",
+        "--out",
+        "o",
+        "t"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "hid",
+            "matches": {
+              "args": {
+                "out": {
+                  "values": [
+                    "o"
+                  ],
+                  "source": "CommandLine"
+                },
+                "secret": {
+                  "values": [
+                    "s"
+                  ],
+                  "source": "CommandLine"
+                },
+                "token": {
+                  "values": [
+                    "t"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "emoji-help",
+      "argv": [
+        "emoji",
+        "-h"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "Non-BMP characters\n\nUsage: edge emoji [OPTIONS]\n\nOptions:\n  -🚀, --rocket  Launch\n      --to <🌍>  Destination\n  -x            Ex\n  -h, --help    Print help\n",
+      "stderr": "",
+      "parsed": null
+    },
+    {
+      "name": "emoji-short",
+      "argv": [
+        "emoji",
+        "-🚀"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "emoji",
+            "matches": {
+              "args": {
+                "rocket": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                },
+                "x": {
+                  "values": [
+                    "false"
+                  ],
+                  "source": "DefaultValue"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "emoji-cluster",
+      "argv": [
+        "emoji",
+        "-x🚀"
+      ],
+      "env": {},
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "parsed": {
+        "value": {
+          "args": {},
+          "subcommand": {
+            "name": "emoji",
+            "matches": {
+              "args": {
+                "rocket": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                },
+                "x": {
+                  "values": [
+                    "true"
+                  ],
+                  "source": "CommandLine"
+                }
+              },
+              "subcommand": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "emoji-repeated",
+      "argv": [
+        "emoji",
+        "-🚀🚀"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: the argument '--rocket' cannot be used multiple times\n\nUsage: edge emoji [OPTIONS]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "emoji-unknown-short",
+      "argv": [
+        "emoji",
+        "-🛸"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: unexpected argument '-🛸' found\n\nUsage: edge emoji [OPTIONS]\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "strict-invalid-env",
+      "argv": [
+        "strict"
+      ],
+      "env": {
+        "LEVEL": "abc"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value 'abc' for '--level <level>': invalid digit found in string\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "strict-valid-env",
+      "argv": [
+        "strict"
+      ],
+      "env": {
+        "LEVEL": "3"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: 'edge strict' requires a subcommand but one was not provided\n  [subcommands: go, help]\n\nUsage: edge strict [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    },
+    {
+      "name": "strict-empty",
+      "argv": [
+        "strict"
+      ],
+      "env": {},
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "A required subcommand and an environment value\n\nUsage: edge strict [OPTIONS] <COMMAND>\n\nCommands:\n  go    Go\n  help  Print this message or the help of the given subcommand(s)\n\nOptions:\n      --level <level>  Level [env: LEVEL=]\n  -h, --help           Print help\n",
+      "parsed": null
+    },
+    {
+      "name": "strict-invalid-env-with-subcommand",
+      "argv": [
+        "strict",
+        "go"
+      ],
+      "env": {
+        "LEVEL": "300"
+      },
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "error: invalid value '300' for '--level <level>': 300 is not in 0..=255\n\nFor more information, try '--help'.\n",
+      "parsed": null
+    }
+  ]
+}
