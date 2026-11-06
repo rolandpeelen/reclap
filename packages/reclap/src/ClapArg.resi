@@ -5,13 +5,20 @@ An argument without `short` and `long` is positional. */
 
 /** What happens when the argument occurs. Mirrors `clap::ArgAction`. */
 type action =
-  | /** Stores one value. A second occurrence is an error. */ Set
-  | /** Appends every value of every occurrence. */ Append
-  | /** A flag that reads as `true` when present. */ SetTrue
-  | /** A flag that reads as `false` when present. */ SetFalse
-  | /** Counts the occurrences, as in `-vvv`. */ Count
-  | /** Prints help and stops. */ Help
-  | /** Prints the version and stops. */ Version
+  /** Stores one value. A second occurrence is an error. */
+  | Set
+  /** Appends every value of every occurrence. */
+  | Append
+  /** A flag that reads as `true` when present. */
+  | SetTrue
+  /** A flag that reads as `false` when present. */
+  | SetFalse
+  /** Counts the occurrences, as in `-vvv`. */
+  | Count
+  /** Prints help and stops. */
+  | Help
+  /** Prints the version and stops. */
+  | Version
 
 type t = {
   id: string,
