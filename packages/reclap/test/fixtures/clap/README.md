@@ -18,7 +18,7 @@ reference/clap-fixtures/regen.sh
 ```
 
 This builds the CLIs (`cargo build --locked --bins`) and runs the `runner`
-binary, which overwrites `greet.json` and `git.json` here. The first build
+binary, which overwrites `greet.json`, `git.json` and `edge.json` here. The first build
 needs crates.io access. The output is deterministic.
 
 ## Files
@@ -27,6 +27,7 @@ needs crates.io access. The output is deterministic.
 | ------------ | --------------------------------------------------- |
 | `greet.json` | `reference/clap-fixtures/src/bin/greet.rs` (no subcommands) |
 | `git.json`   | `reference/clap-fixtures/src/bin/git.rs` (subcommands)      |
+| `edge.json`  | `reference/clap-fixtures/src/bin/edge.rs` (builder API; parser, usage and environment edge cases) |
 
 The argv cases are listed in `reference/clap-fixtures/src/bin/runner.rs`.
 
@@ -50,8 +51,8 @@ Each file has this shape:
 }
 ```
 
-- `argv` excludes the program name. The binary is invoked as `greet` or `git`,
-  so usage lines start with that name.
+- `argv` excludes the program name. The binary is invoked as `greet`, `git` or
+  `edge`, so usage lines start with that name.
 - `env` lists the environment variables of the case. The runner clears the
   rest of the environment; it only adds `CLAP_FIXTURE_OUT`, the file where the
   CLI writes `parsed`. clap does not read that variable.
@@ -65,6 +66,11 @@ Each file has this shape:
   tagging: a unit variant is a string (`"Status"`), a struct or newtype variant
   is `{"Clone": {...}}`, and a `ValueEnum` is the variant name (`"Auto"`).
   `Option` is `null` when absent and a `Vec` is `[]` when absent.
+- `edge` is written with the builder API, so its `value` is a dump of the
+  `ArgMatches` instead: `{"args": {id: {"values": [...], "source": ...}},
+  "subcommand": {"name": ..., "matches": ...} | null}`, with the raw values
+  (`get_raw`) and the `ValueSource` of every id in `ids()`, sorted by id. It
+  has no `debug`.
 
 See `docs/clap-output-format.md` for the formatting rules derived from these
 outputs and from clap's source.

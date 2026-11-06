@@ -163,6 +163,69 @@ const GIT: &[Case] = &[
     case("unexpected-extra-positional-nested", &["remote", "add", "a", "b", "c"]),
 ];
 
+const EDGE: &[Case] = &[
+    // Help, usage and version of the root.
+    case("short-help", &["-h"]),
+    case("empty-argv", &[]),
+    case("help-with-value", &["--help=foo"]),
+    case("version-with-value", &["--version=1"]),
+    case("subcommand-help-with-value", &["flags", "--help=foo"]),
+    // Flags and counters: defaults and environment values.
+    case("flags-absent", &["flags"]),
+    case("flags-given", &["flags", "--flag", "--plain", "-vv"]),
+    case_env("flags-env-true", &["flags"], &[("FLAG", "true"), ("PLAIN", "true")]),
+    case_env("flags-env-false", &["flags"], &[("FLAG", "false"), ("PLAIN", "false")]),
+    case_env("flag-env-yes", &["flags"], &[("FLAG", "yes")]),
+    case_env("flag-env-similar", &["flags"], &[("FLAG", "ture")]),
+    case_env("flag-env-empty", &["flags"], &[("FLAG", "")]),
+    case_env("set-false-env-garbage", &["flags"], &[("PLAIN", "1")]),
+    case_env("flag-env-ignored-when-given", &["flags", "--flag"], &[("FLAG", "garbage")]),
+    case_env("count-env", &["flags"], &[("VCOUNT", "3")]),
+    case_env("count-env-invalid", &["flags"], &[("VCOUNT", "x")]),
+    case_env("count-env-too-large", &["flags"], &[("VCOUNT", "300")]),
+    case_env("count-env-ignored-when-given", &["flags", "-v"], &[("VCOUNT", "7")]),
+    case_env("flags-help-with-env", &["flags", "--help"], &[("FLAG", "yes"), ("VCOUNT", "2")]),
+    // arg_required_else_help counts environment values as given.
+    case("need-empty", &["need"]),
+    case_env("need-env", &["need"], &[("NAME", "bob")]),
+    case("need-given", &["need", "--name", "ann"]),
+    // A positional and subcommands.
+    case("pos-unexpected-after-full", &["pos", "a", "zzz"]),
+    case("pos-transposed-word-after-full", &["pos", "a", "rnu"]),
+    case("pos-similar-subcommand-after-full", &["pos", "a", "runn"]),
+    case("flags-extra-word-without-subcommands", &["flags", "zzz"]),
+    case("pos-similar-word-fills-positional", &["pos", "rnu"]),
+    case("pos-then-subcommand", &["pos", "a", "run"]),
+    case("pos-help", &["pos", "-h"]),
+    case("pos-unknown-long", &["pos", "--zzz"]),
+    // A multi-value positional and subcommands.
+    case("multi-subcommand-name-is-value", &["multi", "a", "b", "run"]),
+    case("multi-subcommand-after-one-value", &["multi", "a", "run"]),
+    case("multi-subcommand-first", &["multi", "run"]),
+    case("multi-subcommand-after-flag", &["multi", "a", "--loud", "run"]),
+    case("multi-subcommand-after-double-dash", &["multi", "--", "run"]),
+    // Hidden required arguments.
+    case("hid-help", &["hid", "-h"]),
+    case_env("hid-missing-with-env", &["hid", "--hid", "h"], &[("NAME", "n")]),
+    case("hid-missing", &["hid"]),
+    case("hid-unknown-after-hidden", &["hid", "--hid", "h", "--bogus"]),
+    case("hid-unknown-after-visible", &["hid", "--opt", "o", "--bogus"]),
+    case("hid-unknown-suggests-hidden", &["hid", "--opt", "o", "--secrt", "s"]),
+    case("hid-flag-like-value-unknown-short", &["hid", "-q"]),
+    case("hid-complete", &["hid", "--secret", "s", "--out", "o", "t"]),
+    // Non-BMP characters.
+    case("emoji-help", &["emoji", "-h"]),
+    case("emoji-short", &["emoji", "-🚀"]),
+    case("emoji-cluster", &["emoji", "-x🚀"]),
+    case("emoji-repeated", &["emoji", "-🚀🚀"]),
+    case("emoji-unknown-short", &["emoji", "-🛸"]),
+    // Environment errors before the missing subcommand.
+    case_env("strict-invalid-env", &["strict"], &[("LEVEL", "abc")]),
+    case_env("strict-valid-env", &["strict"], &[("LEVEL", "3")]),
+    case("strict-empty", &["strict"]),
+    case_env("strict-invalid-env-with-subcommand", &["strict", "go"], &[("LEVEL", "300")]),
+];
+
 #[derive(Serialize)]
 struct Fixture<'a> {
     cli: &'a str,
@@ -242,7 +305,7 @@ fn main() {
     let bin_dir = std::env::current_exe().unwrap().parent().unwrap().to_path_buf();
     let tmp = std::env::temp_dir().join(format!("clap-fixtures-{}", std::process::id()));
     std::fs::create_dir_all(&tmp).unwrap();
-    for (cli, cases) in [("greet", GREET), ("git", GIT)] {
+    for (cli, cases) in [("greet", GREET), ("git", GIT), ("edge", EDGE)] {
         let fixture = run_cli(&bin_dir, cli, cases, &tmp);
         let path = out_dir.join(format!("{cli}.json"));
         let mut json = serde_json::to_string_pretty(&fixture).unwrap();
