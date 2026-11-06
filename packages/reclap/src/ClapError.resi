@@ -15,8 +15,25 @@ type t =
   | DisplayHelp({output: string})
   | DisplayVersion({output: string})
   | DisplayHelpOnMissingArgumentOrSubcommand({output: string})
-  | UnknownArgument({context: context, argument: string, suggestion: option<string>})
-  | InvalidSubcommand({context: context, name: string, suggestion: option<string>})
+  /** An argument that the command does not define. `suggestion` is the closest known
+  argument, rendered as `tip: a similar argument exists: '--force'`. `tips` holds clap's
+  other hints; the parser fills it with `to pass '--foo' as a value, use '-- --foo'` when
+  the command has positional arguments and there is no suggestion. */
+  | UnknownArgument({
+      context: context,
+      argument: string,
+      suggestion: option<string>,
+      tips: array<string>,
+    })
+  /** A positional value that names no subcommand. `suggestion` is the closest subcommand
+  name. `tips` holds clap's other hints; the parser fills it with
+  `to pass 'foo' as a value, use 'prog -- foo'` when the command has positional arguments. */
+  | InvalidSubcommand({
+      context: context,
+      name: string,
+      suggestion: option<string>,
+      tips: array<string>,
+    })
   | InvalidValue({
       context: context,
       argument: string,
@@ -25,7 +42,9 @@ type t =
       possibleValues: array<string>,
       suggestion: option<string>,
     })
-  | MissingValue({context: context, argument: string})
+  /** An option at the end of the command line without its value. `possibleValues` lists
+  the visible possible values of the argument, empty when it accepts any value. */
+  | MissingValue({context: context, argument: string, possibleValues: array<string>})
   | UnexpectedValue({context: context, argument: string, value: string})
   | MissingRequiredArguments({context: context, arguments: array<string>})
   | MissingSubcommand({context: context, name: string, subcommands: array<string>})
