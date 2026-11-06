@@ -1,0 +1,20 @@
+{
+  "name": "reclap",
+  "version": "0.1.0",
+  "description": "Derive command line parsers from ReScript types, in the style of Rust's clap.",
+  "type": "module",
+  "license": "MIT",
+  "files": ["src", "rescript.json", "ppx.exe"],
+  "scripts": {
+    "build:ppx": "dune build",
+    "build": "npm run build:ppx && rescript build",
+    "clean": "rescript clean && dune clean",
+    "format": "rescript format && dune fmt 2>/dev/null || true",
+    "test:ppx": "dune test",
+    "test": "npm run build && vitest run && npm run test:ppx"
+  },
+  "devDependencies": {
+    "rescript": "12.3.1",
+    "vitest": "3.2.7"
+  }
+}

@@ -1,0 +1,3 @@
+(executable
+ (name reclap_ppx)
+ (libraries reclap_ppx))
