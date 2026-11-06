@@ -1,0 +1,182 @@
+type nonrec common =
+  {
+  verbose: int [@res.doc " Print more output "];
+  colorEnabled: bool [@res.doc " Disable colors "];
+  configFile: string option }
+let (commonArgs : common Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.long
+                 (Clap.Arg.short
+                    (Clap.Arg.action (Clap.Arg.make {*j|verbose|*j})
+                       Clap.Arg.Count) {*j|v|*j}) {*j|verbose|*j})
+              {*j|Print more output|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.long
+                 (Clap.Arg.action (Clap.Arg.make {*j|colorEnabled|*j})
+                    Clap.Arg.SetFalse) {*j|no-color|*j})
+              {*j|Disable colors|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.env
+            (Clap.Arg.long
+               (Clap.Arg.valueParser
+                  (Clap.Arg.action
+                     (Clap.Arg.valueName (Clap.Arg.make {*j|configFile|*j})
+                        {*j|CONFIG_FILE|*j}) Clap.Arg.Set)
+                  Clap.ValueParser.string) {*j|config_file|*j})
+            {*j|config-file|*j}))
+    (fun [arity:1]__clap_matches ->
+       let __clap_field_verbose =
+         Clap.Matches.getCount __clap_matches {*j|verbose|*j} in
+       let __clap_field_colorEnabled =
+         Clap.Matches.getFlag __clap_matches {*j|colorEnabled|*j} in
+       match Clap.Matches.getOne __clap_matches {*j|configFile|*j}
+               Clap.ValueParser.string
+       with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_configFile ->
+           Ok
+             ({
+                verbose = __clap_field_verbose;
+                colorEnabled = __clap_field_colorEnabled;
+                configFile = __clap_field_configFile
+              } : common))
+type nonrec t =
+  {
+  common: common ;
+  timeout: int
+    [@res.doc
+      " Seconds before the job is killed.\n\n  Zero means no timeout. "];
+  tags: string array option ;
+  token: string ;
+  trace: bool ;
+  attempts: int ;
+  history: string array ;
+  inputs: string array [@res.doc " Input files... "];
+  job: string [@res.doc " The job to run "]}[@@res.doc
+                                              " Runs a job\n\nThe job runs until it finishes or `--timeout` passes. "]
+let (args : t Clap.Args.t) =
+  Clap.Args.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command = Clap.Args.augment commonArgs __clap_command in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.longHelp
+              (Clap.Arg.help
+                 (Clap.Arg.env
+                    (Clap.Arg.long
+                       (Clap.Arg.defaultValue
+                          (Clap.Arg.valueParser
+                             (Clap.Arg.action
+                                (Clap.Arg.valueName
+                                   (Clap.Arg.make {*j|timeout|*j})
+                                   {*j|TIMEOUT|*j}) Clap.Arg.Set)
+                             Clap.ValueParser.int) Clap.ValueParser.int 30)
+                       {*j|timeout|*j}) {*j|JOB_TIMEOUT|*j})
+                 {*j|Timeout in seconds|*j})
+              {*j|Seconds before the job is killed.\n\nZero means no timeout.|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.visibleAlias
+              (Clap.Arg.visibleAlias
+                 (Clap.Arg.alias
+                    (Clap.Arg.alias
+                       (Clap.Arg.long
+                          (Clap.Arg.valueParser
+                             (Clap.Arg.action
+                                (Clap.Arg.valueName
+                                   (Clap.Arg.make {*j|job-tags|*j})
+                                   {*j|TAG|*j}) Clap.Arg.Append)
+                             Clap.ValueParser.string) {*j|tags|*j})
+                       {*j|tag|*j}) {*j|t|*j}) {*j|label|*j}) {*j|labels|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.hide
+              (Clap.Arg.long
+                 (Clap.Arg.valueParser
+                    (Clap.Arg.action
+                       (Clap.Arg.required
+                          (Clap.Arg.valueName (Clap.Arg.make {*j|token|*j})
+                             {*j|TOKEN|*j}) false) Clap.Arg.Set)
+                    Clap.ValueParser.string) {*j|token|*j})) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.longHelp
+              (Clap.Arg.long
+                 (Clap.Arg.action (Clap.Arg.make {*j|trace|*j})
+                    Clap.Arg.SetTrue) {*j|trace|*j})
+              {*j|Only for debugging.|*j}) in
+       let __clap_command =
+         Clap.Command.arg __clap_command
+           (Clap.Arg.help
+              (Clap.Arg.valueParser
+                 (Clap.Arg.action
+                    (Clap.Arg.valueName (Clap.Arg.make {*j|inputs|*j})
+                       {*j|INPUTS|*j}) Clap.Arg.Append)
+                 Clap.ValueParser.string) {*j|Input files...|*j}) in
+       Clap.Command.arg __clap_command
+         (Clap.Arg.help
+            (Clap.Arg.valueParser
+               (Clap.Arg.action
+                  (Clap.Arg.required
+                     (Clap.Arg.valueName (Clap.Arg.make {*j|job|*j})
+                        {*j|JOB|*j}) true) Clap.Arg.Set)
+               Clap.ValueParser.string) {*j|The job to run|*j}))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Args.fromMatches commonArgs __clap_matches with
+       | Error __clap_error -> Error __clap_error
+       | Ok __clap_field_common ->
+           (match Clap.Matches.getRequired __clap_matches {*j|timeout|*j}
+                    Clap.ValueParser.int
+            with
+            | Error __clap_error -> Error __clap_error
+            | Ok __clap_field_timeout ->
+                (match Clap.Matches.getManyOptional __clap_matches
+                         {*j|job-tags|*j} Clap.ValueParser.string
+                 with
+                 | Error __clap_error -> Error __clap_error
+                 | Ok __clap_field_tags ->
+                     (match Clap.Matches.getRequired __clap_matches
+                              {*j|token|*j} Clap.ValueParser.string
+                      with
+                      | Error __clap_error -> Error __clap_error
+                      | Ok __clap_field_token ->
+                          let __clap_field_trace =
+                            Clap.Matches.getFlag __clap_matches {*j|trace|*j} in
+                          let __clap_field_attempts = 42 in
+                          let __clap_field_history = [||] in
+                          (match Clap.Matches.getMany __clap_matches
+                                   {*j|inputs|*j} Clap.ValueParser.string
+                           with
+                           | Error __clap_error -> Error __clap_error
+                           | Ok __clap_field_inputs ->
+                               (match Clap.Matches.getRequired __clap_matches
+                                        {*j|job|*j} Clap.ValueParser.string
+                                with
+                                | Error __clap_error -> Error __clap_error
+                                | Ok __clap_field_job ->
+                                    Ok
+                                      ({
+                                         common = __clap_field_common;
+                                         timeout = __clap_field_timeout;
+                                         tags = __clap_field_tags;
+                                         token = __clap_field_token;
+                                         trace = __clap_field_trace;
+                                         attempts = __clap_field_attempts;
+                                         history = __clap_field_history;
+                                         inputs = __clap_field_inputs;
+                                         job = __clap_field_job
+                                       } : t)))))))
+let (parser : t Clap.Parser.t) =
+  Clap.Parser.fromArgs
+    (Clap.Command.longAbout
+       (Clap.Command.about
+          (Clap.Command.version (Clap.Command.make {*j|job-runner|*j})
+             {*j|0.1.0|*j}) {*j|Runs a job|*j}) {*j|Explicit long about|*j})
+    args
+let run [arity:1]argv = Clap.tryParseFrom parser argv

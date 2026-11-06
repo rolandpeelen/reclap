@@ -1,0 +1,87 @@
+type nonrec constant = {
+  value: string }
+let (constantArgs : constant Clap.Args.t) =
+  Clap.Args.make (fun [arity:1]__clap_command -> __clap_command)
+    (fun [arity:1]_ ->
+       let __clap_field_value = {*j|fixed|*j} in
+       Ok ({ value = __clap_field_value } : constant))
+type nonrec command =
+  | Run of {
+  code: int } 
+  | Noop 
+let (commandSubcommand : command Clap.Subcommand.t) =
+  Clap.Subcommand.make
+    (fun [arity:1]__clap_command ->
+       let __clap_command =
+         Clap.Command.subcommand __clap_command
+           (Clap.Command.make {*j|run|*j}) in
+       Clap.Command.subcommand __clap_command
+         (Clap.Command.hide (Clap.Command.make {*j|noop|*j})))
+    (fun [arity:1]__clap_matches ->
+       match Clap.Matches.subcommand __clap_matches with
+       | Some ({*j|run|*j}, _) ->
+           let __clap_field_code = 0 in
+           Ok (Run { code = __clap_field_code } : command)
+       | Some ({*j|noop|*j}, _) -> Ok (Noop : command)
+       | Some _|None -> Clap.Matches.missingSubcommand __clap_matches)
+module Sub =
+  struct
+    type nonrec t =
+      {
+      dry-run: bool ;
+      max-count: int option ;
+      constant: constant ;
+      command: command }[@@res.doc " A nested program "]
+    let (args : t Clap.Args.t) =
+      Clap.Args.make
+        (fun [arity:1]__clap_command ->
+           let __clap_command =
+             Clap.Command.arg __clap_command
+               (Clap.Arg.long
+                  (Clap.Arg.action (Clap.Arg.make {*j|dry-run|*j})
+                     Clap.Arg.SetTrue) {*j|dry-run|*j}) in
+           let __clap_command =
+             Clap.Command.arg __clap_command
+               (Clap.Arg.long
+                  (Clap.Arg.short
+                     (Clap.Arg.valueParser
+                        (Clap.Arg.action
+                           (Clap.Arg.valueName
+                              (Clap.Arg.make {*j|max-count|*j})
+                              {*j|MAX_COUNT|*j}) Clap.Arg.Set)
+                        Clap.ValueParser.int) {*j|N|*j}) {*j|max-count|*j}) in
+           let __clap_command = Clap.Args.augment constantArgs __clap_command in
+           Clap.Subcommand.augmentRequired commandSubcommand __clap_command)
+        (fun [arity:1]__clap_matches ->
+           let __clap_field_dry_run_137192074 =
+             Clap.Matches.getFlag __clap_matches {*j|dry-run|*j} in
+           match Clap.Matches.getOne __clap_matches {*j|max-count|*j}
+                   Clap.ValueParser.int
+           with
+           | Error __clap_error -> Error __clap_error
+           | Ok __clap_field_max_count_632106348 ->
+               (match Clap.Args.fromMatches constantArgs __clap_matches with
+                | Error __clap_error -> Error __clap_error
+                | Ok __clap_field_constant ->
+                    (match Clap.Subcommand.fromMatches commandSubcommand
+                             __clap_matches
+                     with
+                     | Error __clap_error -> Error __clap_error
+                     | Ok __clap_field_command ->
+                         Ok
+                           ({
+                              dry-run = __clap_field_dry_run_137192074;
+                              max-count = __clap_field_max_count_632106348;
+                              constant = __clap_field_constant;
+                              command = __clap_field_command
+                            } : t))))
+    let (parser : t Clap.Parser.t) =
+      Clap.Parser.fromArgs
+        (Clap.Command.about (Clap.Command.make {*j|sub|*j})
+           {*j|A nested program|*j}) args
+  end
+type nonrec internal =
+  | Hidden 
+let (internalValueParser : internal Clap.ValueParser.t) =
+  Clap.ValueParser.enum [||]
+let subParser = Sub.parser
